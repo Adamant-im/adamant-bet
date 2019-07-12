@@ -3,7 +3,7 @@
 	/** The exchanage bot's secret phrase for concluding transactions. 
 	Bot's ADAMANT address will correspond this passPhrase.
     **/
-	"passPhrase": "qwert yuiop asdfg hjkl zxcvb nmqwe",
+	"passPhrase": "twin odor machine joy logic job estate kite harbor behave keen vote",
 
 	/** List of nodes to fetch transactions.
     If one become unavailable, pool will choose live one.
@@ -93,7 +93,7 @@
     "adamant_notify": "",
 
     /** Slack key for notifications and monitoring (if needed) **/
-    "slack": "https://hooks.slack.com/services/",
+    "slack": "https://hooks.slack.com/services/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",
 
     /** Port for getting debug info. 
 	Do not set for live exchange bots, use only for debugging. 

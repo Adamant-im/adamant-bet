@@ -20,14 +20,14 @@ module.exports = async (itx, tx) => {
 		inAmountMessage = tx.amount / SAT;
 		inCurrency = 'ADM';
 		inTxid = tx.id;
-		betRate = msg.toFixed(8);
+		betRate = +(msg).toFixed(8);
 	} else if (msg.includes('_transaction')){ // not ADM income payment
 		inCurrency = msg.match(/"type":"(.*)_transaction/)[1];
 		try {
 			const json = JSON.parse(msg);
 			inAmountMessage = Number(json.amount);
 			inTxid = json.hash;
-			betRate = json.comments.toFixed(8);
+			betRate = +(json.comments).toFixed(8);
 		} catch (e){
 			inCurrency = 'none';
 		}

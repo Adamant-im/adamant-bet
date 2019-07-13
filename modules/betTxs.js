@@ -12,6 +12,7 @@ module.exports = async (itx, tx) => {
 	const {paymentsDb} = db;
 	const msg = itx.encrypted_content;
 	let inCurrency,
+		betRate,
 		inTxid,
 		inAmountMessage;
 
@@ -19,16 +20,20 @@ module.exports = async (itx, tx) => {
 		inAmountMessage = tx.amount / SAT;
 		inCurrency = 'ADM';
 		inTxid = tx.id;
+		betRate = msg.toFixed(8);
 	} else if (msg.includes('_transaction')){ // not ADM income payment
 		inCurrency = msg.match(/"type":"(.*)_transaction/)[1];
 		try {
 			const json = JSON.parse(msg);
 			inAmountMessage = Number(json.amount);
 			inTxid = json.hash;
+			betRate = json.comments.toFixed(8);
 		} catch (e){
 			inCurrency = 'none';
 		}
 	}
+
+	console.log('Got new bet: ' + betRate*2 + ' ' + inCurrency);
 
 	inCurrency = String(inCurrency).toUpperCase().trim();
 
@@ -39,6 +44,7 @@ module.exports = async (itx, tx) => {
 		itxId: itx._id,
 		senderId: tx.senderId,
 		inCurrency,
+		betRate,
 		inTxid,
 		inAmountMessage: +(inAmountMessage).toFixed(8),
 		transactionIsValid: null,
@@ -102,7 +108,7 @@ module.exports = async (itx, tx) => {
 			});
 			notifyType = 'warn';
 			msgNotify = `Bet Bot ${Store.botName} notifies about incoming transaction below minimum value of _${min_value_usd}_ USD: _${inAmountMessage}_ _${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
-			msgSendBack = `I don’t accept exchange crypto below minimum value of _${min_value_usd}_ USD. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+			msgSendBack = `I don’t accept bets below minimum value of _${min_value_usd}_ USD. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 		}
 
 	}

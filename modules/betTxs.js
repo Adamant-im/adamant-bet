@@ -95,7 +95,7 @@ module.exports = async (itx, tx) => {
 		notifyType = 'warn';
 
 		msgNotify = `Bet Bot ${Store.botName} cannot recognize user bet. Got _${betRate}_ from string _${betString}_. Will try to send payment of _${inAmountMessage}_ _${inCurrency}_ back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
-		msgSendBack = `I can't recognize bet from your comment _${betString}_. Please put a number next time. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+		msgSendBack = `I can't recognize bet from your comment _${betString}_. Please put a number. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 	}
 	else {
 		// need some calculate

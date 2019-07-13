@@ -20,10 +20,6 @@ const fields = {
 		type: Array,
 		default: ['https://ethnode1.adamant.im']
 	},
-	exchange_crypto: {
-		type: Array,
-		isRequired: true
-	},
 	accepted_crypto: {
 		type: Array,
 		isRequired: true
@@ -38,7 +34,31 @@ const fields = {
 	},
 	min_value_usd: {
 		type: Number,
-		default: 1
+		default: 0.1
+	},
+	win_price_range: {
+		type: Number,
+		default: 50
+	},
+	get_current_bets_price_ADM: {
+		type: Number,
+		default: 5
+	},
+	timezone: {
+		type: Number,
+		default: 0
+	},
+	bet_hour: {
+		type: Number,
+		default: 0
+	},
+	bet_currency: {
+		type: String,
+		isRequired: true
+	},
+	bet_period: {
+		type: String,
+		isRequired: true
 	},
 	daily_limit_usd: {
 		type: Number,
@@ -48,9 +68,9 @@ const fields = {
 		type: Number,
 		default: 3
 	},
-	exchange_fee: {
+	bureau_reward_percent: {
 		type: Number,
-		default: 1
+		default: 20
 	},
 	adamant_notify: {
 		type: String,
@@ -62,7 +82,7 @@ const fields = {
 	},
 	welcome_string: {
 		type: String,
-		default: 'Hello 😊. I didn’t understand you. I am exchange bot, anonymous and work instant. Learn more about me on ADAMANT’s blog or type */help* to see what I can.'
+		default: 'Hello 😊.'
 	}
 };
 try {
@@ -83,24 +103,24 @@ try {
 	config.address = address;
 
 
-	['min_confirmations', 'exchange_fee', 'min_value_usd'].forEach(param => {
+	['min_confirmations'].forEach(param => {
 		config.known_crypto.forEach(coin => {
 			const field = param + '_' + coin;
 			config[field] = config[field] || config[param] || fields[param].default;
 			if (fields[param].type !== config[field].__proto__.constructor) {
-				exit(`Exchange Bot ${address} config is wrong. Field type _${field}_ is not valid, expected type is _${fields[field].type.name}_. Cannot start Bot.`);
+				exit(`Bet Bot ${address} config is wrong. Field type _${field}_ is not valid, expected type is _${fields[field].type.name}_. Cannot start Bot.`);
 			}
 		});
 	});
 
 	Object.keys(fields).forEach(f => {
 		if (!config[f] && fields[f].isRequired) {
-			exit(`Exchange Bot ${address} config is wrong. Field _${f}_ is not valid. Cannot start Bot.`);
+			exit(`Bet Bot ${address} config is wrong. Field _${f}_ is not valid. Cannot start Bot.`);
 		} else if (!config[f] && fields[f].default) {
 			config[f] = fields[f].default;
 		}
 		if (config[f] && fields[f].type !== config[f].__proto__.constructor) {
-			exit(`Exchange Bot ${address} config is wrong. Field type _${f}_ is not valid, expected type is _${fields[f].type.name}_. Cannot start Bot.`);
+			exit(`Bet Bot ${address} config is wrong. Field type _${f}_ is not valid, expected type is _${fields[f].type.name}_. Cannot start Bot.`);
 		}
 	});
 

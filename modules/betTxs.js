@@ -13,6 +13,7 @@ module.exports = async (itx, tx) => {
 	const msg = itx.encrypted_content;
 	let inCurrency,
 		betRate,
+		betString,
 		inTxid,
 		inAmountMessage;
 
@@ -20,21 +21,21 @@ module.exports = async (itx, tx) => {
 		inAmountMessage = tx.amount / SAT;
 		inCurrency = 'ADM';
 		inTxid = tx.id;
-		betRate = Number(msg);
+		betString = msg;
 	} else if (msg.includes('_transaction')){ // not ADM income payment
 		inCurrency = msg.match(/"type":"(.*)_transaction/)[1];
 		try {
 			const json = JSON.parse(msg);
 			inAmountMessage = Number(json.amount);
 			inTxid = json.hash;
-			betRate = Number(json.comments);
+			betString = json.comments;
 		} catch (e){
 			inCurrency = 'none';
 		}
 	}
 
-	console.log('Bet vulue: ' + betRate);
-	console.log('Got new bet: ' + betRate*2 + ' ' + inCurrency);
+	betRate = Number(betString);
+	console.log('Got new bet: ' + betRate + ' ' + inCurrency);
 
 	inCurrency = String(inCurrency).toUpperCase().trim();
 
@@ -87,7 +88,16 @@ module.exports = async (itx, tx) => {
 
 		msgNotify = `Bet Bot ${Store.botName} notifies about incoming transfer of unaccepted crypto: _${inAmountMessage}_ _${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
 		msgSendBack = `Crypto _${inCurrency}_ is not accepted. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
-	} else {
+	} 
+	else if (!betRate){
+		pay.error = 93;
+		pay.needToSendBack = true;
+		notifyType = 'warn';
+
+		msgNotify = `Bet Bot ${Store.botName} cannot recognize user bet. Got _${betRate}_ from string _${betString}_. Will try to send payment of _${inAmountMessage}_ _${inCurrency}_ back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+		msgSendBack = `I can't recognize bet from your comment _${betString}_. Please put a number next time. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+	}
+	else {
 		// need some calculate
 		pay.inAmountMessageUsd = Store.mathEqual(inCurrency, 'USD', inAmountMessage).outAmount;
 

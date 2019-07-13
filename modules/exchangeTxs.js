@@ -6,7 +6,7 @@ const notify = require('../helpers/notify');
 const log = require('../helpers/log');
 const config = require('./configReader');
 const Store = require('./Store');
-const deepExchangeValidator = require('./deepExchangeValidator');
+const deepExchangeValidator = require('./deepTxValidator');
 
 module.exports = async (itx, tx) => {
 	const {paymentsDb} = db;

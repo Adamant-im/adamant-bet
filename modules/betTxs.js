@@ -20,19 +20,20 @@ module.exports = async (itx, tx) => {
 		inAmountMessage = tx.amount / SAT;
 		inCurrency = 'ADM';
 		inTxid = tx.id;
-		betRate = +(msg).toFixed(8);
+		betRate = Number(msg);
 	} else if (msg.includes('_transaction')){ // not ADM income payment
 		inCurrency = msg.match(/"type":"(.*)_transaction/)[1];
 		try {
 			const json = JSON.parse(msg);
 			inAmountMessage = Number(json.amount);
 			inTxid = json.hash;
-			betRate = +(json.comments).toFixed(8);
+			betRate = Number(json.comments);
 		} catch (e){
 			inCurrency = 'none';
 		}
 	}
 
+	console.log('Bet vulue: ' + betRate);
 	console.log('Got new bet: ' + betRate*2 + ' ' + inCurrency);
 
 	inCurrency = String(inCurrency).toUpperCase().trim();

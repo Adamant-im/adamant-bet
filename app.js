@@ -10,6 +10,7 @@ function init() {
 	require('./modules/exchangePayer');
 	require('./modules/sendBack');
 	require('./modules/sendedTxValidator');
+	require('./helpers/cron');
 	try {
 		db.systemDb.findOne().then(system => {
 			if (system) {

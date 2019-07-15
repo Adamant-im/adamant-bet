@@ -56,6 +56,10 @@ const fields = {
 		type: String,
 		isRequired: true
 	},
+	cool_period_hours: {
+		type: Number,
+		default: 24
+	},
 	daily_limit_usd: {
 		type: Number,
 		default: 1000

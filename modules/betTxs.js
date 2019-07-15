@@ -7,6 +7,7 @@ const log = require('../helpers/log');
 const config = require('./configReader');
 const Store = require('./Store');
 const deepTxValidator = require('./deepTxValidator');
+const Task = require('../helpers/CronTask');
 
 module.exports = async (itx, tx) => {
 	const {paymentsDb} = db;
@@ -126,6 +127,9 @@ module.exports = async (itx, tx) => {
 
 	if (!pay.isFinished && !pay.needToSendBack){// if Ok checks tx
 		notifyType = 'log';
+
+		console.log('ifCoolPeriod result: ' + Task.ifCoolPeriod(Date.now()));
+		
 		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of _${inAmountMessage}_ _${inCurrency}_ (*${pay.inAmountMessageUsd.toFixed(2)}*). Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
 		msgSendBack = `I understood you want to make a bet of _${inAmountMessage}_ _${inCurrency}_ (**${pay.inAmountMessageUsd.toFixed(2)}**). Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 	}

@@ -10,6 +10,7 @@ const ethData = api.eth.keys(config.passPhrase);
 
 module.exports = {
 	version,
+	round: null,
 	botName: AdmAddress,
 	user: {
 		ADM: {
@@ -45,6 +46,14 @@ module.exports = {
 			this.updateSystem('lastBlock', lastBlock);
 		} catch (e) {
 			log.error('Error while updating lastBlock: ' + e);
+		}
+	},
+	async nextRound() {
+		try {
+			const round = this.round ? ++this.round : 1;
+			this.updateSystem('round', round);
+		} catch (e) {
+			log.error('Error while updating round: ' + e);
 		}
 	},
 	async updateCurrencies(){

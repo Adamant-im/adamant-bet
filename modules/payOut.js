@@ -6,6 +6,9 @@ const log = require('../helpers/log');
 const notify = require('../helpers/notify');
 
 module.exports = async () => {
+    log.info('Date: ' + Date.now());
+    return;
+
 	const {paymentsDb} = db;
 	await $u.updateAllBalances();
 
@@ -77,6 +80,6 @@ module.exports = async () => {
 		});
 };
 
-setInterval(() => {
-	module.exports();
-}, 10 * 1000);
+//setInterval(() => {
+//	module.exports();
+//}, 10 * 1000);

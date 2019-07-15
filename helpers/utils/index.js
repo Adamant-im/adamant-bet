@@ -5,6 +5,7 @@ const adm_utils = require('./adm_utils');
 const log = require('../log');
 const db = require('../../modules/DB');
 const Store = require('../../modules/Store');
+const Task = require('../CronTask');
 
 module.exports = {
 	unix() {
@@ -88,6 +89,56 @@ module.exports = {
 	isHasTicker(coin){
 		const pairs = Object.keys(Store.currencies).toString();
 		return pairs.includes(',' + coin + '/') || pairs.includes('/' + coin);
+	},
+	timeDiff(dateNext, datePrev, interval) {
+		var second=1000, minute=second*60, hour=minute*60, day=hour*24, week=day*7;
+		var timediff = dateNext - datePrev;
+		if (isNaN(timediff)) return NaN;
+		switch (interval) {
+			case "years": return dateNext.getFullYear() - datePrev.getFullYear();
+			case "months": return (
+				( dateNext.getFullYear() * 12 + dateNext.getMonth() )
+				-
+				( datePrev.getFullYear() * 12 + datePrev.getMonth() )
+			);
+			case "weeks"  : return Math.floor(timediff / week);
+			case "days"   : return Math.floor(timediff / day); 
+			case "hours"  : return Math.floor(timediff / hour); 
+			case "minutes": return Math.floor(timediff / minute);
+			case "seconds": return Math.floor(timediff / second);
+			default: return undefined;
+		}
+	},
+	incline(number, one, some) {
+		return number > 1 ? some: one;
+	},
+	timeDiffDaysHoursMins(dateNext, datePrev) {
+		var timeString = '';
+		var days = this.timeDiff(dateNext, datePrev, 'days');
+		var hours = this.timeDiff(dateNext, datePrev, 'hours') % 24;
+		var mins = this.timeDiff(dateNext, datePrev, 'minutes') % 60;
+
+		if(days > 0) {
+			timeString = timeString + days + ' ' + this.incline(days, 'day', 'days');
+		}
+		if((days < 7) && (hours > 0)) {
+			timeString = timeString + ' ' + hours + ' ' + this.incline(hours, 'hour', 'hours');
+		}
+		if((days === 0) && (mins > 0)) {
+			timeString = timeString + ' ' + mins + ' ' + this.incline(mins, 'min', 'mins');
+		}
+		timeString = timeString.trim();
+
+		return timeString;
+	},
+	ifCoolPeriod(date) {
+		console.log('ifCoolPeriod: ' + 'nextRun');
+		console.log(Store.round);
+		console.log('222Cron next time run: ' + Task.betsJob.nextDates());
+		// nextRun = Task.betsJob;
+		// console.log('ifCoolPeriod: ' + nextRun.nextDates());
+//		cron.job.dateNext
+		return date;
 	},
 	ETH: eth_utils,
 	ADM: adm_utils,

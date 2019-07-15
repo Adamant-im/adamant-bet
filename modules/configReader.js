@@ -52,7 +52,7 @@ const fields = {
 		type: String,
 		isRequired: true
 	},
-	bet_period: {
+	bet_period_cron_pattern: {
 		type: String,
 		isRequired: true
 	},

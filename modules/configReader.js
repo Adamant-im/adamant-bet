@@ -44,10 +44,6 @@ const fields = {
 		type: Number,
 		default: 5
 	},
-	timezone: {
-		type: String,
-		default: "Europe/Moscow"
-	},
 	bet_currency: {
 		type: String,
 		isRequired: true

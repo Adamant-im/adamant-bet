@@ -76,22 +76,13 @@ module.exports = {
 			return 0;
 		}
 	},
-	mathEqual(from, to, amount, isNotFee){
+	cryptoConvert(from, to, amount){
 		let price = this.getPrice(from, to);
-		if (!isNotFee){
-			price *= (100 - config['exchange_fee_' + from]) / 100;
-		};
 		if (!price){
-			return {
-				outAmount: 0,
-				exchangePrice: 0
-			};
+			return 0;
 		}
 		price = +price.toFixed(8);
-		return {
-			outAmount: +(price * amount).toFixed(8),
-			exchangePrice: price
-		};
+		return +(price * amount).toFixed(8);
 	}
 };
 

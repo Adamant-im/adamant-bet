@@ -50,6 +50,7 @@ module.exports = async (tx) => {
 		txid: tx.id,
 		date: $u.unix(),
 		block_id: tx.blockId,
+		txTimestamp: tx.timestamp,
 		encrypted_content: msg,
 		spam: false,
 		sender: tx.senderId,

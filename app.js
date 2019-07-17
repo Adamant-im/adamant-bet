@@ -1,28 +1,34 @@
 const notify = require('./helpers/notify');
 const db = require('./modules/DB');
 const Store = require('./modules/Store');
-const Task = require('./helpers/CronTask');
 const checker = require('./modules/checkerTransactions');
-setTimeout(init, 2000);
+// const Task = require('./helpers/CronTask');
+setTimeout(init, 3000);
 
 function init() {
 	require('./server');
 	require('./modules/confirmationsCounter');
 	require('./modules/exchangePayer');
 	require('./modules/sendBack');
-	require('./modules/sendedTxValidator');
-	// require('./helpers/cronTask');
+	require('./modules/sendBackTxValidator');
+	require('./helpers/CronTask');
 	try {
 		console.log('App started.');
 
-		// 		db.systemDb.db.drop();
-		// db.incomingTxsDb.db.drop();
-		// db.paymentsDb.db.drop();
-
+		// setTimeout(()=>{
+		// 	db.systemDb.db.drop();
+		// 	db.incomingTxsDb.db.drop();
+		// 	db.paymentsDb.db.drop();
+		// }, 2000);
+		
 		db.systemDb.findOne().then(system => {
 			if (system) {
 				Store.lastBlock = system.lastBlock;
-				Store.round = system.round;
+				if(system.round){
+					Store.round = system.round;
+				} else {
+					Store.nextRound();
+				}
 			} else { // if fst start
 				Store.updateLastBlock();
 				Store.nextRound();
@@ -30,7 +36,6 @@ function init() {
 //			Task.setJob();
 		// console.log('111Cron next time run: ' + Task.betsJob.nextDates());
 			checker();
-			notify(`*Bet Bot ${Store.botName} started* for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round: ${Store.round}.`, 'info');
 		});
 	} catch (e) {
 		notify('Bet Bot is not started. Error: ' + e, 'error');

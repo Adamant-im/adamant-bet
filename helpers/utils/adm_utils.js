@@ -46,13 +46,14 @@ module.exports = {
 				value,
 				comment
 			} = params;
-			console.log(`Send ${value} ADM: `, comment);
+			console.log(`Send ${value} ADM to ${address} with comment:`, comment);
 			let res;
 			if (comment){
 				res = api.send(User.passPhrase, address, comment, 'message', null, value);
 			} else {
 				res = api.send(User.passPhrase, address, value, null, comment);
 			}
+			console.log(`Send result:`, res);
 
 			if (!res) {
 				return {

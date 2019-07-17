@@ -44,9 +44,10 @@ module.exports = {
 		}
 		return output;
 	},
-	async getAddressCryptoFromAdmAddressADM(coin, admAddress) {
+	async getAddressCryptoFromKVS(coin, admAddress) {
 		try {
 			const resp = await api.syncGet(`/api/states/get?senderId=${admAddress}&key=${coin.toLowerCase()}:address`);
+			console.log('getAddressCryptoFromKVS(): ' + `/api/states/get?senderId=${admAddress}&key=${coin.toLowerCase()}:address`);
 			if (resp && resp.success) {
 				if (resp.transactions.length) {
 					return resp.transactions[0].asset.state.value;
@@ -55,7 +56,7 @@ module.exports = {
 				};
 			};
 		} catch (e) {
-			log.error(' in getAddressCryptoFromAdmAddressADM(): ' + e);
+			log.error('Error in getAddressCryptoFromKVS(): ' + e);
 			return null;
 		}
 	},

@@ -2,6 +2,7 @@ const db = require('./DB');
 const config = require('./configReader');
 const $u = require('../helpers/utils');
 const Store = require('./Store');
+const Task = require('../helpers/CronTask');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
 

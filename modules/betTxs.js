@@ -44,10 +44,13 @@ module.exports = async (itx, tx) => {
 		_id: tx.id,
 		date: $u.unix(),
 		admTxId: tx.id,
+		txTimestamp: tx.timestamp,
 		itxId: itx._id,
 		senderId: tx.senderId,
 		inCurrency,
-		betRate,
+		betRateValue: betRate,
+		betRound: null,
+		betMessageText: null,
 		inTxid,
 		inAmountMessage: +(inAmountMessage).toFixed(8),
 		transactionIsValid: null,
@@ -55,14 +58,15 @@ module.exports = async (itx, tx) => {
 		needToSendBack: false,
 		transactionIsFailed: false,
 		isFinished: false,
-		isBetsRequest: false
+		isBetsRequest: false,
+		isKVSnotFoundNotified: false
 	});
 
 	// Validate
 	let msgSendBack = false;
 	let msgNotify = false;
 	let notifyType = 'info';
-	const min_value_usd = config['min_value_usd_' + inCurrency];
+	const min_value_usd = config.min_value_usd;
 	const min_confirmations = config['min_confirmations_' + inCurrency];
 	const inTxidDublicate = await paymentsDb.findOne({inTxid});
 
@@ -100,7 +104,8 @@ module.exports = async (itx, tx) => {
 	}
 	else {
 		// need some calculate
-		pay.inAmountMessageUsd = Store.mathEqual(inCurrency, 'USD', inAmountMessage).outAmount;
+		pay.inAmountMessageUsd = Store.cryptoConvert(inCurrency, 'USD', inAmountMessage);
+		log.info(`Transaction value is ${pay.inAmountMessageUsd} USD.`);
 
 		const userDailiValue = await $u.userDailiValue(tx.senderId);
 		log.info(`User's ${tx.senderId} daily volume is ${userDailiValue} USD.`);
@@ -128,10 +133,36 @@ module.exports = async (itx, tx) => {
 	if (!pay.isFinished && !pay.needToSendBack){// if Ok checks tx
 		notifyType = 'log';
 
-		console.log('ifCoolPeriod result: ' + Task.ifCoolPeriod(Date.now()));
+		isCoolPreriod = Task.ifCoolPeriod(tx.timestamp*1000);
 		
-		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of _${inAmountMessage}_ _${inCurrency}_ (*${pay.inAmountMessageUsd.toFixed(2)}*). Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
-		msgSendBack = `I understood you want to make a bet of _${inAmountMessage}_ _${inCurrency}_ (**${pay.inAmountMessageUsd.toFixed(2)}**). Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+		// log.info(`Is bet in cool period? ${isCoolPreriod}. Bet for round: `);
+		// nextRound = Task.betsJob.nextDates();
+
+		let chooseBetRound;
+		let periodString = ``;
+		let currentOrNext = '';
+		if(isCoolPreriod){
+			chooseBetRound = Store.round + 1;
+			currentOrNext = 'next';
+			periodString = `. As for current round not bets acce`;
+		} else {
+			chooseBetRound = Store.round;
+			currentOrNext = 'current';
+			periodString = `. As for current round not bets acce`;
+		}
+
+		let betMessage = `_${inAmountMessage}_ _${inCurrency}_ (*${pay.inAmountMessageUsd.toFixed(2)} USD*) on _${betRate}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
+
+
+		pay.update({
+			currentOrNext: currentOrNext,
+			betRound: chooseBetRound,
+			betMessageText: betMessage 
+		});
+
+
+		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+		msgSendBack = `I understood your bet of ${betMessage}. Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 	}
 
 	await pay.save();
@@ -145,10 +176,10 @@ module.exports = async (itx, tx) => {
 	}
 };
 
-if (config.isDev){
-	setTimeout(()=>{
-		// db.systemDb.db.drop();
-		// db.incomingTxsDb.db.drop();
-		// db.paymentsDb.db.drop();
-	}, 2000);
-}
+// if (config.isDev){
+// 	setTimeout(()=>{
+// 		db.systemDb.db.drop();
+// 		db.incomingTxsDb.db.drop();
+// 		db.paymentsDb.db.drop();
+// 	}, 2000);
+// }

@@ -83,7 +83,8 @@ const fields = {
 };
 try {
 	if (isDev) {
-		config = require('../tests');
+		console.log('App running in dev mode.');
+		config = JSON.parse(jsonminify(fs.readFileSync('./config.json.dev', 'utf-8')));
 	} else {
 		config = JSON.parse(jsonminify(fs.readFileSync('./config.json', 'utf-8')));
 	}

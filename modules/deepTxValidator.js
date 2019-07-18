@@ -109,10 +109,10 @@ module.exports = async (pay, tx) => {
 					msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Amount expected: _${pay.inAmountMessage}_, but real amount is _${pay.inAmountReal}_.`;
 					msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
 				} else { // Transaction is valid
-					if(!pay.isKVSnotFoundNotified) {
+					if(!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
 						notifyType = 'info';
 						msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
-						msgSendBack = `I have validated and accepted your bet of ${pay.betMessageText}. I will notify you about results on ${Task.getBetDateString(pay.currentOrNext).tillString}. Wish you success!`;
+						msgSendBack = `I have validated and accepted your bet of ${pay.betMessageText}. I will notify you about results in ${Task.getBetDateString(pay.currentOrNext).tillString}. Wish you success!`;
 					}
 					pay.update({
 						transactionIsValid: true,

@@ -52,8 +52,20 @@ module.exports = {
 		try {
 			const round = this.round ? ++this.round : 1;
 			this.updateSystem('round', round);
+
+			const {roundsDb} = db;
+
+			const newRound = new roundsDb({
+				_id: round,
+				createDate: Date.now(),
+				packDate: null
+			});
+
+			newRound.save();
+			log.info(`New round number ${newRound._id} created at ${newRound.createDate}.`);
+
 		} catch (e) {
-			log.error('Error while updating round: ' + e);
+			log.error('Error while starting new round: ' + e);
 		}
 	},
 	async updateCurrencies(){

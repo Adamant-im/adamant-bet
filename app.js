@@ -8,17 +8,27 @@ setTimeout(init, 3000);
 function init() {
 	require('./server');
 	require('./modules/confirmationsCounter');
-	require('./modules/exchangePayer');
+	require('./modules/updateRounds');
 	require('./modules/sendBack');
 	require('./modules/sendBackTxValidator');
 	require('./helpers/CronTask');
 	try {
 		console.log('App started.');
 
+		// db.systemDb.db.drop();
+		// db.incomingTxsDb.db.drop();
+		// db.paymentsDb.db.drop();
+		// db.roundsDb.db.drop();
+		// db.rewardsPayoutsDb.db.drop();
+		// process.exit();
+
 		// setTimeout(()=>{
 		// 	db.systemDb.db.drop();
 		// 	db.incomingTxsDb.db.drop();
 		// 	db.paymentsDb.db.drop();
+		// 	db.roundsDb.db.drop();
+		// 	db.rewardsPayoutsDb.db.drop();
+		
 		// }, 2000);
 		
 		db.systemDb.findOne().then(system => {

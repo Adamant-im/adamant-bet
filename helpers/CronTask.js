@@ -1,7 +1,7 @@
 const cron = require('cron');
 //const moment = require('moment');
 const config = require('../modules/configReader')
-const payOut=require('../modules/payOut');
+const payOut=require('../modules/choosingWinners');
 const cronPattern=config.bet_period_cron_pattern;
 const timezone=config.timezone;
 const log = require('./log');

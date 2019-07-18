@@ -153,11 +153,19 @@ module.exports = async (itx, tx) => {
 
 		let betMessage = `_${inAmountMessage}_ _${inCurrency}_ (*${pay.inAmountMessageUsd.toFixed(2)} USD*) on _${betRate}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
 
+		let roundTime = Task.betsJob.nextDates(2)[1]-Task.betsJob.nextDates();
+		let leftTime = Task.betsJob.nextDates()-Date.now();
+		if(leftTime > roundTime){
+			leftTime = roundTime;
+		}
+		let earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
+		console.log('roundTime, leftTime, earlyBetKoef', roundTime, leftTime, earlyBetKoef);
 
 		pay.update({
 			currentOrNext: currentOrNext,
 			betRound: chooseBetRound,
-			betMessageText: betMessage 
+			betMessageText: betMessage,
+			earlyBetKoef: earlyBetKoef
 		});
 
 

@@ -13,6 +13,8 @@ mongoClient.connect((err, client) => {
 	collections.systemDb = model(db.collection("systems"));
 	collections.incomingTxsDb = model(db.collection("incomingtxs"));
 	collections.paymentsDb = model(db.collection("payments"));
+	collections.rewardsPayoutsDb = model(db.collection("rewardspayouts"));
+	collections.roundsDb = model(db.collection("rounds"));
 });
 
 module.exports = collections;

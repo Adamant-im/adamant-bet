@@ -1,3 +1,4 @@
+const moment = require('moment');
 const db = require('./DB');
 const log = require('../helpers/log');
 const keys = require('adamant-api/helpers/keys');
@@ -7,6 +8,7 @@ const config = require('./configReader');
 const AdmKeysPair = keys.createKeypairFromPassPhrase(config.passPhrase);
 const AdmAddress = keys.createAddressFromPublicKey(AdmKeysPair.publicKey);
 const ethData = api.eth.keys(config.passPhrase);
+// const Task = require('../helpers/CronTask');
 
 module.exports = {
 	version,
@@ -54,15 +56,16 @@ module.exports = {
 			this.updateSystem('round', round);
 
 			const {roundsDb} = db;
-
 			const newRound = new roundsDb({
 				_id: round,
 				createDate: Date.now(),
+				// plannedFinishDate: Task.betsJob.nextDates(),
 				packDate: null
 			});
 
+			console.log(newRound);
 			newRound.save();
-			log.info(`New round number ${newRound._id} created at ${newRound.createDate}.`);
+			log.info(`New round number ${newRound._id} started at ${moment(newRound.createDate).format('YYYY/MM/DD HH:mm Z')}.`);
 
 		} catch (e) {
 			log.error('Error while starting new round: ' + e);

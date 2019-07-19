@@ -1,9 +1,7 @@
+const moment = require('moment');
 const cron = require('cron');
-//const moment = require('moment');
 const config = require('../modules/configReader')
-const payOut=require('../modules/choosingWinners');
 const cronPattern=config.bet_period_cron_pattern;
-const timezone=config.timezone;
 const log = require('./log');
 const $u = require('./utils');
 const Store = require('../modules/Store');
@@ -32,29 +30,17 @@ module.exports = {
     },
     setJob(){
         this.betsJob = cron.job(cronPattern, () => {
-            log.info('Cron started: ' + Date.now().toString());
-            payOut();
-        }, null, true, timezone);
-        this.betsJob.start();
-
+            log.info('Cron job started at ' + moment(Date.now()).format('YYYY/MM/DD HH:mm Z'));
+            Store.nextRound();
+        }, null, true);
         log.info('Cron started with patter: ' + cronPattern);
-        console.log('Current time:       ' + Date.now());
-        console.log('Cron next time run: ' + this.betsJob.nextDates());
-        console.log('Cron previous time run: ' + this.betsJob.lastDate());
-        console.log('Time till next run: ' + $u.timeDiffDaysHoursMins(this.betsJob.nextDates(), Date.now()));
+        this.betsJob.start();
         
         setTimeout(()=>{ // Wait for Store initialization
-            notify(`*Bet Bot ${Store.botName} started* for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_.`, 'info');
+            notify(`*Bet Bot ${Store.botName} started* for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_ (_${this.getBetDateString('current').nextRoundTime}_).`, 'info');
         }, 5000);
-
-        // console.log('sendAt: ' + this.betsJob.sendAt);
-        // console.log('timeout: ' + this.betsJob.timeout);
     }
 }
 
 module.exports.setJob();
 
-
-// setTimeout(()=>{
-//     module.exports.setJob();
-// }, 2000);

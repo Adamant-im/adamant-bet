@@ -36,7 +36,7 @@ module.exports = async (itx, tx) => {
 	}
 
 	betRate = Number(betString);
-	console.log('Got new bet: ' + betRate + ' ' + inCurrency);
+	log.info('Got new bet: ' + betRate + ' ' + inCurrency);
 
 	inCurrency = String(inCurrency).toUpperCase().trim();
 
@@ -135,8 +135,7 @@ module.exports = async (itx, tx) => {
 
 		isCoolPreriod = Task.ifCoolPeriod(tx.timestamp*1000);
 		
-		// log.info(`Is bet in cool period? ${isCoolPreriod}. Bet for round: `);
-		// nextRound = Task.betsJob.nextDates();
+		log.info(`Is bet placed in cool period for current round numer ${Store.round}?: ${isCoolPreriod}. Round ends in ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
 
 		let chooseBetRound;
 		let periodString = ``;
@@ -144,22 +143,22 @@ module.exports = async (itx, tx) => {
 		if(isCoolPreriod){
 			chooseBetRound = Store.round + 1;
 			currentOrNext = 'next';
-			periodString = `. As for current round not bets acce`;
+			periodString = ` Note: bet is accepted not for current, but for next round; cool period goes now.`;
 		} else {
 			chooseBetRound = Store.round;
 			currentOrNext = 'current';
-			periodString = `. As for current round not bets acce`;
+			periodString = ``;
 		}
 
 		let betMessage = `_${inAmountMessage}_ _${inCurrency}_ (*${pay.inAmountMessageUsd.toFixed(2)} USD*) on _${betRate}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
 
 		let roundTime = Task.betsJob.nextDates(2)[1]-Task.betsJob.nextDates();
-		let leftTime = Task.betsJob.nextDates()-Date.now();
+		let leftTime = Task.betsJob.nextDates()-pay.timestamp*1000;
 		if(leftTime > roundTime){
 			leftTime = roundTime;
 		}
 		let earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
-		console.log('roundTime, leftTime, earlyBetKoef', roundTime, leftTime, earlyBetKoef);
+		log.info(`Round duration: ${$u.timeIntervalDaysHoursMins(roundTime)}; left until next round: ${$u.timeIntervalDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef}.`);
 
 		pay.update({
 			currentOrNext: currentOrNext,
@@ -168,9 +167,8 @@ module.exports = async (itx, tx) => {
 			earlyBetKoef: earlyBetKoef
 		});
 
-
-		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
-		msgSendBack = `I understood your bet of ${betMessage}. Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}.*${periodString}* Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+		msgSendBack = `I understood your bet of ${betMessage}.**${periodString}** Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 	}
 
 	await pay.save();
@@ -183,11 +181,3 @@ module.exports = async (itx, tx) => {
 		deepTxValidator(pay, tx);
 	}
 };
-
-// if (config.isDev){
-// 	setTimeout(()=>{
-// 		db.systemDb.db.drop();
-// 		db.incomingTxsDb.db.drop();
-// 		db.paymentsDb.db.drop();
-// 	}, 2000);
-// }

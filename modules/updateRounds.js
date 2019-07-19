@@ -1,3 +1,4 @@
+const moment = require('moment');
 const db = require('./DB');
 const config = require('./configReader');
 const $u = require('../helpers/utils');
@@ -15,7 +16,7 @@ module.exports = async () => {
 	})).filter(r => r._id <= Store.round)
 	.forEach(async currentRound => {
 		try {
-			log.info(`Packing round number ${currentRound._id} on date ${Date.now()}.`);
+			log.info(`Packing round number ${currentRound._id} on Now: ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
 			const {
 				_id,
 				finalDate,
@@ -182,46 +183,76 @@ module.exports = async () => {
 						pay.payoutValueUsd = pay.rewardPercent * currentRound.rewardPoolUsd;
 
 						const {rewardsPayoutsDb} = db;
-	
-						// If no payout ETH Tx added earlier, add it now
-						let checkedTx = await rewardsPayoutsDb.findOne({admTxId: pay.admTxId, outCurrency: 'ETH'});
-						if (checkedTx === null) {					
-							let newPayout = new rewardsPayoutsDb({
-								admTxId: pay.admTxId,
-								betRound: pay.betRound,
-								winBet: currentRound.winBet,
-								accuracyKoef: pay.accuracyKoef,
-								earlyBetKoef: pay.earlyBetKoef,
-								calcDate: Date.now(),
-								senderKvsADMAddress: pay.senderKvsADMAddress,
-								senderKvsETHAddress: pay.senderKvsETHAddress,
-								betMessageText: pay.betMessageText,
-								outCurrency: 'ETH',
-								outValue: payoutValueETH
-							});
-							newPayout.save();	
-						};
-	
-						// If no payout ADM Tx added earlier, add it now
-						checkedTx = await rewardsPayoutsDb.findOne({admTxId: pay.admTxId, outCurrency: 'ADM'});
-						if (checkedTx === null) {					
-							newPayout = new rewardsPayoutsDb({
-								admTxId: pay.admTxId,
-								betRound: pay.betRound,
-								winBet: currentRound.winBet,
-								accuracyKoef: pay.accuracyKoef,
-								earlyBetKoef: pay.earlyBetKoef,
-								calcDate: Date.now(),
-								senderKvsADMAddress: pay.senderKvsADMAddress,
-								senderKvsETHAddress: pay.senderKvsETHAddress,
-								betMessageText: pay.betMessageText,
-								outCurrency: 'ADM',
-								outValue: payoutValueADM
-							});
-							newPayout.save();	
-						};
 
-						console.log('pay', pay);
+						// If no payout Tx added earlier, add it now for each of accepted coins
+						let checkedTx;
+						config.accepted_crypto.forEach(async (coin) => {
+							const field = 'senderKvs' + coin + 'Address';
+							// console.log('field', field);
+							checkedTx = await rewardsPayoutsDb.findOne({admTxId: pay.itxId, outCurrency: coin});
+							if (checkedTx === null) {					
+								newPayout = new rewardsPayoutsDb({
+									itxId: pay.admTxId,
+									senderId: pay.senderId,
+									isFinished: false,
+									betRound: pay.betRound,
+									winBet: currentRound.winBet,
+									accuracyKoef: pay.accuracyKoef,
+									earlyBetKoef: pay.earlyBetKoef,
+									calcDate: Date.now(),
+									senderKvsOutAddress: pay[field],
+									betMessageText: pay.betMessageText,
+									outCurrency: coin,
+									outAmount: payoutValueADM
+								});
+								console.log('newPayout', newPayout);
+								newPayout.save();	
+							};
+						});
+						
+
+
+						// If no payout ETH Tx added earlier, add it now
+						// let checkedTx = await rewardsPayoutsDb.findOne({admTxId: pay.admTxId, outCurrency: 'ETH'});
+						// if (checkedTx === null) {					
+						// 	let newPayout = new rewardsPayoutsDb({
+						// 		admTxId: pay.admTxId,
+						// 		isFinished: false,
+						// 		betRound: pay.betRound,
+						// 		winBet: currentRound.winBet,
+						// 		accuracyKoef: pay.accuracyKoef,
+						// 		earlyBetKoef: pay.earlyBetKoef,
+						// 		calcDate: Date.now(),
+						// 		senderKvsADMAddress: pay.senderKvsADMAddress,
+						// 		senderKvsETHAddress: pay.senderKvsETHAddress,
+						// 		betMessageText: pay.betMessageText,
+						// 		outCurrency: 'ETH',
+						// 		outValue: payoutValueETH
+						// 	});
+						// 	newPayout.save();	
+						// };
+	
+
+						// checkedTx = await rewardsPayoutsDb.findOne({admTxId: pay.admTxId, outCurrency: 'ADM'});
+						// if (checkedTx === null) {					
+						// 	newPayout = new rewardsPayoutsDb({
+						// 		admTxId: pay.admTxId,
+						// 		isFinished: false,
+						// 		betRound: pay.betRound,
+						// 		winBet: currentRound.winBet,
+						// 		accuracyKoef: pay.accuracyKoef,
+						// 		earlyBetKoef: pay.earlyBetKoef,
+						// 		calcDate: Date.now(),
+						// 		senderKvsADMAddress: pay.senderKvsADMAddress,
+						// 		senderKvsETHAddress: pay.senderKvsETHAddress,
+						// 		betMessageText: pay.betMessageText,
+						// 		outCurrency: 'ADM',
+						// 		outValue: payoutValueADM
+						// 	});
+						// 	newPayout.save();	
+						// };
+
+						// console.log('pay', pay);
 	
 						pay.save();	
 					});

@@ -2,7 +2,7 @@ const notify = require('./helpers/notify');
 const db = require('./modules/DB');
 const Store = require('./modules/Store');
 const checker = require('./modules/checkerTransactions');
-// const Task = require('./helpers/CronTask');
+
 setTimeout(init, 3000);
 
 function init() {
@@ -22,15 +22,6 @@ function init() {
 		// db.rewardsPayoutsDb.db.drop();
 		// process.exit();
 
-		// setTimeout(()=>{
-		// 	db.systemDb.db.drop();
-		// 	db.incomingTxsDb.db.drop();
-		// 	db.paymentsDb.db.drop();
-		// 	db.roundsDb.db.drop();
-		// 	db.rewardsPayoutsDb.db.drop();
-		
-		// }, 2000);
-		
 		db.systemDb.findOne().then(system => {
 			if (system) {
 				Store.lastBlock = system.lastBlock;
@@ -43,8 +34,7 @@ function init() {
 				Store.updateLastBlock();
 				Store.nextRound();
 			}
-//			Task.setJob();
-		// console.log('111Cron next time run: ' + Task.betsJob.nextDates());
+
 			checker();
 		});
 	} catch (e) {

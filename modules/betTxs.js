@@ -36,15 +36,15 @@ module.exports = async (itx, tx) => {
 	}
 
 	betRate = Number(betString);
-	log.info('Got new bet: ' + betRate + ' ' + inCurrency);
-
 	inCurrency = String(inCurrency).toUpperCase().trim();
+
+	log.info(`Got new bet: ${inAmountMessage} ${inCurrency} for ${betRate} on ${config.bet_currency}.`);
 
 	const pay = new paymentsDb({
 		_id: tx.id,
 		date: $u.unix(),
 		admTxId: tx.id,
-		txTimestamp: tx.timestamp,
+		txTimestamp: tx.timestamp*1000 + Date.UTC(2017, 8, 2, 17, 0, 0, 0),
 		itxId: itx._id,
 		senderId: tx.senderId,
 		inCurrency,
@@ -133,9 +133,9 @@ module.exports = async (itx, tx) => {
 	if (!pay.isFinished && !pay.needToSendBack){// if Ok checks tx
 		notifyType = 'log';
 
-		isCoolPreriod = Task.ifCoolPeriod(tx.timestamp*1000);
+		isCoolPreriod = Task.ifCoolPeriod(tx.timestamp);
 		
-		log.info(`Is bet placed in cool period for current round numer ${Store.round}?: ${isCoolPreriod}. Round ends in ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
+		log.info(`Is bet placed in cool period for current round numer ${Store.round}?: ${isCoolPreriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
 
 		let chooseBetRound;
 		let periodString = ``;
@@ -143,22 +143,23 @@ module.exports = async (itx, tx) => {
 		if(isCoolPreriod){
 			chooseBetRound = Store.round + 1;
 			currentOrNext = 'next';
-			periodString = ` Note: bet is accepted not for current, but for next round; cool period goes now.`;
+			periodString = ` **Note: bet is accepted not for current, but for next round; cool period goes now.**`;
 		} else {
 			chooseBetRound = Store.round;
 			currentOrNext = 'current';
 			periodString = ``;
 		}
 
-		let betMessage = `_${inAmountMessage}_ _${inCurrency}_ (*${pay.inAmountMessageUsd.toFixed(2)} USD*) on _${betRate}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
+		let betMessage = `_${$u.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (*${$u.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD*) on _${$u.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
 
 		let roundTime = Task.betsJob.nextDates(2)[1]-Task.betsJob.nextDates();
-		let leftTime = Task.betsJob.nextDates()-pay.timestamp*1000;
+		let leftTime = Task.betsJob.nextDates()-pay.txTimestamp;
+
 		if(leftTime > roundTime){
 			leftTime = roundTime;
 		}
 		let earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
-		log.info(`Round duration: ${$u.timeIntervalDaysHoursMins(roundTime)}; left until next round: ${$u.timeIntervalDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef}.`);
+		log.info(`Round duration: ${$u.timeIntervalDaysHoursMins(roundTime)}; Time left until next round: ${$u.timeIntervalDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
 
 		pay.update({
 			currentOrNext: currentOrNext,
@@ -167,8 +168,8 @@ module.exports = async (itx, tx) => {
 			earlyBetKoef: earlyBetKoef
 		});
 
-		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}.*${periodString}* Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
-		msgSendBack = `I understood your bet of ${betMessage}.**${periodString}** Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+		msgSendBack = `I understood your bet of ${betMessage}.${periodString} Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 	}
 
 	await pay.save();
@@ -181,3 +182,5 @@ module.exports = async (itx, tx) => {
 		deepTxValidator(pay, tx);
 	}
 };
+
+

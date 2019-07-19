@@ -15,6 +15,7 @@ mongoClient.connect((err, client) => {
 	collections.paymentsDb = model(db.collection("payments"));
 	collections.rewardsPayoutsDb = model(db.collection("rewardspayouts"));
 	collections.roundsDb = model(db.collection("rounds"));
+
 });
 
 module.exports = collections;

@@ -37,10 +37,12 @@ module.exports = {
         this.betsJob.start();
         
         setTimeout(()=>{ // Wait for Store initialization
-            notify(`*Bet Bot ${Store.botName} started* for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_ (_${this.getBetDateString('current').nextRoundTime}_).`, 'info');
-        }, 5000);
+                notify(`*Bet Bot ${Store.botName} started* for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_ (_${this.getBetDateString('current').nextRoundTime}_).`, 'info');
+        }, 6000);
     }
 }
+
+
 
 module.exports.setJob();
 

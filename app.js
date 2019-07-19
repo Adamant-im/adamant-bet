@@ -3,7 +3,7 @@ const db = require('./modules/DB');
 const Store = require('./modules/Store');
 const checker = require('./modules/checkerTransactions');
 
-setTimeout(init, 3000);
+setTimeout(init, 4000);
 
 function init() {
 	require('./server');
@@ -15,12 +15,12 @@ function init() {
 	try {
 		console.log('App started.');
 
-		// db.systemDb.db.drop();
-		// db.incomingTxsDb.db.drop();
-		// db.paymentsDb.db.drop();
-		// db.roundsDb.db.drop();
-		// db.rewardsPayoutsDb.db.drop();
-		// process.exit();
+// 		db.systemDb.db.drop();
+// db.incomingTxsDb.db.drop();
+// db.paymentsDb.db.drop();
+// db.roundsDb.db.drop();
+// db.rewardsPayoutsDb.db.drop();
+// console.log('Databases has been cleared.');
 
 		db.systemDb.findOne().then(system => {
 			if (system) {
@@ -39,5 +39,6 @@ function init() {
 		});
 	} catch (e) {
 		notify('Bet Bot is not started. Error: ' + e, 'error');
+		process.exit();
 	}
 }

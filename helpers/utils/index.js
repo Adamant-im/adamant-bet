@@ -22,13 +22,13 @@ module.exports = {
 	},
 	thousandSeparator(num, doBold) {
 		var parts = (num + '').split('.'),
-			main = parts[0],
-			len = main.length,
+			integerPart = parts[0],
+			len = integerPart.length,
 			output = '',
 			i = len - 1;
 
 		while (i >= 0) {
-			output = main.charAt(i) + output;
+			output = integerPart.charAt(i) + output;
 			if ((len - i) % 3 === 0 && i > 0) {
 				output = ' ' + output;
 			}
@@ -47,7 +47,7 @@ module.exports = {
 	async getAddressCryptoFromKVS(coin, admAddress) {
 		try {
 			const resp = await api.syncGet(`/api/states/get?senderId=${admAddress}&key=${coin.toLowerCase()}:address`);
-			console.log('getAddressCryptoFromKVS(): ' + `/api/states/get?senderId=${admAddress}&key=${coin.toLowerCase()}:address`);
+			// console.log('getAddressCryptoFromKVS(): ' + `/api/states/get?senderId=${admAddress}&key=${coin.toLowerCase()}:address`);
 			if (resp && resp.success) {
 				if (resp.transactions.length) {
 					return resp.transactions[0].asset.state.value;

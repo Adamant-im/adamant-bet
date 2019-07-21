@@ -63,7 +63,7 @@ module.exports = async () => {
 					notify(msgNotify, notifyType);
 					$u.sendAdmMsg(pay.senderId, msgSendBack);
 				}
-				pay.save();
+				await pay.save();
 				return;
 			}
 			const {status, blockNumber} = txData;

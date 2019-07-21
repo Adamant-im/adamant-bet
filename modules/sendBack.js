@@ -73,7 +73,7 @@ module.exports = async () => {
 			} else { // Can't make a transaction
 
 				if (++pay.counterSendBack < 50){
-					pay.save();
+					await pay.save();
 					return;
 				};
 
@@ -97,7 +97,7 @@ module.exports = async () => {
 			amount: ${sentBackAmount}
 			eqUsd: ${sentBackAmountUsd}
 		`);
-		pay.save();
+		await pay.save();
 		if (msgNotify){
 			notify(msgNotify, notifyType);
 		}

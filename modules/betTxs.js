@@ -1,3 +1,4 @@
+const moment = require('moment');
 
 const db = require('./DB');
 const {SAT} = require('../helpers/const');
@@ -133,31 +134,29 @@ module.exports = async (itx, tx) => {
 	if (!pay.isFinished && !pay.needToSendBack){// if Ok checks tx
 		notifyType = 'log';
 
-		isCoolPreriod = Task.ifCoolPeriod(tx.timestamp);
-		
-		log.info(`Is bet placed in cool period for current round numer ${Store.round}?: ${isCoolPreriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
+		isCoolPreriod = Task.ifCoolPeriod(pay.txTimestamp);
+
+		log.info(`Is bet placed in cool period for current round number ${Store.round}?: ${isCoolPreriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
 
 		let chooseBetRound;
 		let periodString = ``;
 		let currentOrNext = '';
+		let roundTime = Task.betsJob.nextDates(2)[1]-Task.betsJob.nextDates();
+		let leftTime;
+
 		if(isCoolPreriod){
 			chooseBetRound = Store.round + 1;
 			currentOrNext = 'next';
 			periodString = ` **Note: bet is accepted not for current, but for next round; cool period goes now.**`;
+			leftTime = roundTime;
 		} else {
 			chooseBetRound = Store.round;
 			currentOrNext = 'current';
 			periodString = ``;
+			leftTime = Task.betsJob.nextDates()-pay.txTimestamp;
 		}
 
 		let betMessage = `_${$u.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (*${$u.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD*) on _${$u.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
-
-		let roundTime = Task.betsJob.nextDates(2)[1]-Task.betsJob.nextDates();
-		let leftTime = Task.betsJob.nextDates()-pay.txTimestamp;
-
-		if(leftTime > roundTime){
-			leftTime = roundTime;
-		}
 		let earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
 		log.info(`Round duration: ${$u.timeIntervalDaysHoursMins(roundTime)}; Time left until next round: ${$u.timeIntervalDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
 

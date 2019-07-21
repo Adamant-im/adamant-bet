@@ -13,113 +13,120 @@ module.exports = async () => {
 		isPaused: false,
 		outTxid: null
 	})).forEach(async payout => {
-		log.info(`RewardsPayer().`);
-
-		// If round is not fully calculated yet, do nothing
-		const {roundsDb} = db;
-		payoutRound = await roundsDb.findOne({_id: payout.betRound});
-	
-		if(!payoutRound.packDate){
-			log.info(`Attempt to make payout for not fully calculated round ${payout.betRound}. Will try next time.`);
-			return;
-		}
-
-		payout.triesSendCounter = ++payout.triesSendCounter || 0;
-		let toBePaused = payout.triesSendCounter > 50 ? true : false;
 
 		const {
 			itxId,
 			senderId,
 			isFinished,
 			betRound,
-			winBet,
-			accuracyKoef,
-			earlyBetKoef,
 			calcDate,
 			payoutDate,
 			senderKvsOutAddress,
-			betMessageText,
 			outCurrency,
 			outAmount,
 			outAmountUsd,
-			isZeroAmount
+			outAmountF,
+			isZeroAmount,
+			triesSendCounter
 		} = payout;
+
+		// payout.update({
+		// 	isFinished: true
+		// }, true);
+		// // logString = `Amount is ${outAmount} ${outCurrency} for payout to ${addressString} / Tx ${itxId} (round ${betRound}). Skipping.`;
+		// log.info('finished ' + itxId);
+		// return;
+
+		// If round is not fully calculated yet, do nothing
+		const {roundsDb} = db;
+		payoutRound = await roundsDb.findOne({_id: betRound});
+		if(!payoutRound.packDate){
+			log.info(`Attempt to make payout for not fully calculated round ${betRound}. Will try next time.`);
+			// return;
+		}
+
+		triesSendCounter += 1;
+		let toBePaused = triesSendCounter > 50 ? true : false;
+
 
 		let etherString = '';
 		let addressString = senderKvsOutAddress === senderId ? senderKvsOutAddress : senderKvsOutAddress + ' (' + senderId + ')';
 		let logString = '';
+		let minRewardUsd = config.min_reward_usd;
+		let minRewardUsdF = $u.thousandSeparator(minRewardUsd, false);
+
+
+		// console.log(itxId);
+		// console.log(addressString);
+		// console.log(outAmount);
+		// return;
 
 		if (!outAmount || outAmount === 0){
 			payout.update({
 				isZeroAmount: true,
-				isFinished: true
+				isFinished: true,
+				triesSendCounter
 			}, true);
-			
-			logString = `Amount is ${outAmount} for payout to ${addressString} / ${pay.admTxId} (round ${pay.betRound})`;
+			logString = `Amount is ${outAmount} ${outCurrency} for payout to ${addressString} / Tx ${itxId} (round ${betRound}). Skipping.`;
 			log.info(logString);
 			return;
-
-		} else if (outAmountUsd < config.min_reward_usd){
+		} else if (outAmountUsd < minRewardUsd){
 			pay.update({
 				errorSendBack: 17,
-				isFinished: true
-			});
-			notifyType = 'log';
-			msgNotify = `Bet Bot ${Store.botName} won’t send back payment of _${inAmountReal}_ _${inCurrency}_ because it is less than transaction fee. Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
-			msgSendBack = 'I can’t send transfer back to you because it does not cover blockchain fees. If you think it’s a mistake, contact my master.';
-		} else if (outAmount + $u[outCurrency].FEE > Store.user[outCurrency].balance && toBePaused) {
-			payout.update({
-				error: 15,
-				isPaused: toBePaused
+				isFinished: true,
+				triesSendCounter
 			}, true);
-			notify(`Bet Bot ${Store.botName} notifies about insufficient balance for reward payment of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${payout.itxId}.`, 'error');
-			$u.sendAdmMsg(payout.senderId, `I can’t send you reward payment of _${outAmount}_ _${outCurrency}_ in round _${betRound}_ because of insufficient funds. I've already notified my master. Check my balances with **/balances** command. I will try to send transfer back to you.`);
+			notify(`Bet Bot ${Store.botName} won’t send reward of _${outAmountF} ${outCurrency}_ to _${addressString}_ in round _${betRound}_ because it is less than minimum amount of _${minRewardUsdF}_ USD. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, log);
+			$u.sendAdmMsg(senderId, `I wouldn’t send you reward payment of _${outAmountF} ${outCurrency}_ because it is less than minimum amount of _${minRewardUsdF}_ USD.`);
 			return;
+		} else if (outAmount + $u[outCurrency].FEE > Store.user[outCurrency].balance) {
+			if (toBePaused) {
+				payout.update({
+					error: 15,
+					isPaused: toBePaused,
+					triesSendCounter
+				}, true);
+				notify(`Bet Bot ${Store.botName} notifies about insufficient balance for reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+				$u.sendAdmMsg(senderId, `I can’t send you reward payment of _${outAmount}_ _${outCurrency}_ because of insufficient funds. I've already notified my master.`);
+			}
+			payout.update({
+				triesSendCounter
+			}, true);
+		return;
 		}
 
-		log.info(`Attempt to send exchange payment:
-			Coin: ${outCurrency},
-			address:${senderKvsOutAddress},
-			value: ${outAmount},
-			balance: ${Store.user[outCurrency].balance}
-		`);
+		log.info(`Attempt to send reward payment of ${outAmount} ${outCurrency} to ${addressString} / Tx ${itxId} (round ${betRound}).`);
 		const result = await $u[outCurrency].send({
 			address: senderKvsOutAddress,
 			value: outAmount,
-			comment: 'Done! Thank you for business. Hope to see you again.' // if ADM
+			comment: 'Hey, you are lucky! Waiting for new bets!' // if ADM
 		});
-		log.info(`Exchange payment result:
-		${JSON.stringify(result, 0, 2)}`);
+		log.info(`Reward payment result: ${JSON.stringify(result, 0, 2)}.`);
 
 		if (result.success) {
 			payout.update({
+				payoutDate: Date.now(),
 				outTxid: result.hash
 			}, true);
 			Store.user[outCurrency].balance -= (outAmount + $u[outCurrency].FEE);
-			log.info(`Successful exchange payment of ${outAmount} ${outCurrency}. Hash: ${result.hash}.`);
+			log.info(`Successful reward payment of ${outAmount} ${outCurrency} to ${addressString} / Tx ${itxId} (round ${betRound}). Hash: ${result.hash}.`);
 		} else { // Can't make a transaction
-
-			if (payout.triesSendCounter++ < 50){
-				payout.save();
-				return;
-			};
+			if (toBePaused) {
+				payout.update({
+					error: 16,
+					isPaused: toBePaused,
+					triesSendCounter
+				}, true);
+				notify(`Bet Bot ${Store.botName} was unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+				$u.sendAdmMsg(senderId, `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but something went wrong. I've already notified my master.`);
+			}
 			payout.update({
-				error: 16,
-				needToSendBack: true,
+				triesSendCounter
 			}, true);
-			log.error(`Failed to make exchange payment of ${outAmount} ${outCurrency}. Income ADAMANT Tx: https://explorer.adamant.im/tx/${payout.itxId}.`);
-			notify(`Exchange Bot ${Store.botName} cannot make transaction to exchange _${inAmountMessage}_ _${inCurrency}_ for _${outAmount}_ _${outCurrency}_. Will try to send payment back. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${payout.itxId}.`, 'error');
-			$u.sendAdmMsg(payout.senderId, `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but something went wrong. I will try to send payment back to you.`);
+			return;
 		}
 
-		pay.save();
-		if (msgNotify){
-			notify(msgNotify, notifyType);
-		}
-		if (msgSendBack){
-			$u.sendAdmMsg(pay.senderId, msgSendBack);
-		}
-
+		await payout.save();
 	});
 };
 

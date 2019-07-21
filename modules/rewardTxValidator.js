@@ -13,13 +13,7 @@ module.exports = async () => {
 	};
 
 	(await paymentsDb.find({
-		$and: [
-			{isFinished: false},
-			{$or: [
-				{outTxid: {$ne: null}},
-				{sentBackTx: {$ne: null}},
-			]}
-		]
+		outTxid: {$ne: null}
 	})).forEach(async pay => {
 		const {
 			inCurrency,
@@ -82,7 +76,7 @@ module.exports = async () => {
 					notify(msgNotify, notifyType);
 					$u.sendAdmMsg(pay.senderId, msgSendBack);
 				}
-				pay.save();
+				await pay.save();
 				return;
 			}
 			const {status, blockNumber} = txData;

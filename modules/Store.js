@@ -63,8 +63,8 @@ module.exports = {
 				packDate: null
 			});
 
-			console.log(newRound);
-			newRound.save();
+			// console.log(newRound);
+			await newRound.save();
 			log.info(`New round number ${newRound._id} started at ${moment(newRound.createDate).format('YYYY/MM/DD HH:mm Z')}.`);
 
 		} catch (e) {

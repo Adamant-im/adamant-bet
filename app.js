@@ -15,12 +15,12 @@ function init() {
 	try {
 		console.log('App started.');
 
-// 		db.systemDb.db.drop();
-// db.incomingTxsDb.db.drop();
-// db.paymentsDb.db.drop();
-// db.roundsDb.db.drop();
-// db.rewardsPayoutsDb.db.drop();
-// console.log('Databases has been cleared.');
+		// db.systemDb.db.drop();
+		// db.incomingTxsDb.db.drop();
+		// db.paymentsDb.db.drop();
+		// db.roundsDb.db.drop();
+		// db.rewardsPayoutsDb.db.drop();
+		// console.log('Databases has been cleared.');
 
 		db.systemDb.findOne().then(system => {
 			if (system) {

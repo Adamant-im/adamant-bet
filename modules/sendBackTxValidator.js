@@ -27,8 +27,7 @@ module.exports = async () => {
 
 		pay.tryCounterCheckOutTX = ++pay.tryCounterCheckOutTX || 0;
 		
-		let type,
-			sendCurrency,
+		let	sendCurrency,
 			sendTxId,
 			sendAmount,
 			etherString,
@@ -69,6 +68,7 @@ module.exports = async () => {
 			const {status, blockNumber} = txData;
 
 			if (!blockNumber) {
+				log.warn(`Cannot get blockNumber to verify sent back of _${inAmountMessage} ${inCurrency}_. Waiting for next try. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`);
 				return;
 			}
 
@@ -109,7 +109,7 @@ module.exports = async () => {
 				notify(msgNotify, notifyType);
 			}
 		} catch (e) {
-			log.error('Error in sendedTxValidator module ', {type, sendAmount, sendCurrency, sendTxId}, e);
+			log.error('Error in sendedTxValidator module ', {sendAmount, sendCurrency, sendTxId}, e);
 		}
 	});
 

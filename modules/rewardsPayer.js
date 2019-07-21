@@ -4,6 +4,7 @@ const $u = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
+const rewardTxValidator = require('./rewardTxValidator');
 
 module.exports = async () => {
 	const {rewardsPayoutsDb} = db;
@@ -14,7 +15,7 @@ module.exports = async () => {
 		outTxid: null
 	})).forEach(async payout => {
 
-		const {
+		let {
 			itxId,
 			senderId,
 			isFinished,
@@ -27,7 +28,10 @@ module.exports = async () => {
 			outAmountUsd,
 			outAmountF,
 			isZeroAmount,
-			triesSendCounter
+			triesSendCounter,
+			outTxid,
+			error,
+			needHumanCheck
 		} = payout;
 
 		// payout.update({
@@ -72,7 +76,7 @@ module.exports = async () => {
 			return;
 		} else if (outAmountUsd < minRewardUsd){
 			pay.update({
-				errorSendBack: 17,
+				error: 17,
 				isFinished: true,
 				triesSendCounter
 			}, true);
@@ -117,7 +121,7 @@ module.exports = async () => {
 					isPaused: toBePaused,
 					triesSendCounter
 				}, true);
-				notify(`Bet Bot ${Store.botName} was unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+				notify(`Bet Bot ${Store.botName} unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
 				$u.sendAdmMsg(senderId, `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but something went wrong. I've already notified my master.`);
 			}
 			payout.update({

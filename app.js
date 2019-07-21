@@ -8,10 +8,11 @@ setTimeout(init, 4000);
 function init() {
 	require('./server');
 	require('./modules/confirmationsCounter');
-	require('./modules/updateRounds');
 	require('./modules/sendBack');
 	require('./modules/sendBackTxValidator');
-	require('./helpers/CronTask');
+	// require('./modules/updateRounds');
+	const Task = require('./helpers/CronTask');
+
 	try {
 		console.log('App started.');
 
@@ -28,11 +29,11 @@ function init() {
 				if(system.round){
 					Store.round = system.round;
 				} else {
-					Store.nextRound();
+					Task.nextRound();
 				}
 			} else { // if fst start
 				Store.updateLastBlock();
-				Store.nextRound();
+				Task.nextRound();
 			}
 
 			checker();

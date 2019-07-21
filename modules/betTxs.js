@@ -58,6 +58,7 @@ module.exports = async (itx, tx) => {
 		needHumanCheck: false,
 		needToSendBack: false,
 		transactionIsFailed: false,
+		transactionIsConfirmed: false,
 		isFinished: false,
 		isBetsRequest: false,
 		isKVSnotFoundNotified: false
@@ -135,36 +136,33 @@ module.exports = async (itx, tx) => {
 		notifyType = 'log';
 
 		isCoolPreriod = Task.ifCoolPeriod(pay.txTimestamp);
-
 		log.info(`Is bet placed in cool period for current round number ${Store.round}?: ${isCoolPreriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
 
-		let chooseBetRound;
-		let periodString = ``;
-		let currentOrNext = '';
-		let roundTime = Task.betsJob.nextDates(2)[1]-Task.betsJob.nextDates();
+		let roundTime = Task.getRoundTime();
 		let leftTime;
 
+		let periodString = ``;
 		if(isCoolPreriod){
-			chooseBetRound = Store.round + 1;
+			betRound = Store.round + 1;
 			currentOrNext = 'next';
 			periodString = ` **Note: bet is accepted not for current, but for next round; cool period goes now.**`;
 			leftTime = roundTime;
 		} else {
-			chooseBetRound = Store.round;
+			betRound = Store.round;
 			currentOrNext = 'current';
 			periodString = ``;
-			leftTime = Task.betsJob.nextDates()-pay.txTimestamp;
+			leftTime = Task.getTimeLeft(pay.txTimestamp);
 		}
 
-		let betMessage = `_${$u.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (*${$u.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD*) on _${$u.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${chooseBetRound}_)`;
+		let betMessageText = `_${$u.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (*${$u.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD*) on _${$u.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${Task.getBetDateString(currentOrNext).nextRoundTime} (round _${betRound}_)`;
 		let earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
 		log.info(`Round duration: ${$u.timeIntervalDaysHoursMins(roundTime)}; Time left until next round: ${$u.timeIntervalDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
 
 		pay.update({
-			currentOrNext: currentOrNext,
-			betRound: chooseBetRound,
-			betMessageText: betMessage,
-			earlyBetKoef: earlyBetKoef
+			currentOrNext,
+			betRound,
+			betMessageText,
+			earlyBetKoef
 		});
 
 		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;

@@ -169,15 +169,6 @@ module.exports = {
 
 		return timeString;
 	},
-	ifCoolPeriod(date) {
-		console.log('ifCoolPeriod: ' + 'nextRun');
-		console.log(Store.round);
-		console.log('222Cron next time run: ' + Task.betsJob.nextDates());
-		// nextRun = Task.betsJob;
-		// console.log('ifCoolPeriod: ' + nextRun.nextDates());
-//		cron.job.dateNext
-		return date;
-	},
 	ETH: eth_utils,
 	ADM: adm_utils,
 };

@@ -5,12 +5,12 @@ const Store = require('./Store');
 const config = require('./configReader');
 const db = require('./DB');
 const api = require('./api');
-const Task = require('../helpers/CronTask');
 
 module.exports = async (pay, tx) => {
+
 	pay.counterTxDeepValidator = ++pay.counterTxDeepValidator || 0;
 	if (!tx){
-		pay.save();
+		await pay.save();
 		return;
 	}
 	// Fetching addresses from ADAMANT KVS
@@ -36,7 +36,7 @@ module.exports = async (pay, tx) => {
 
 		if (!senderKvsETHAddress){
 			log.error(`Can't get ETH address from KVS. Will try next time.`);
-			pay.save();
+			await pay.save();
 			return;
 		}
 
@@ -51,7 +51,7 @@ module.exports = async (pay, tx) => {
 			pay.update({
 				error: 8,
 				needToSendBack: true,
-				isKVSnotFoundNotified: true
+				isKVSnotFoundNotified: true // need to verify Tx even if send back
 			}, true);
 		};
 
@@ -63,7 +63,7 @@ module.exports = async (pay, tx) => {
 			const in_tx = await $u[pay.inCurrency].syncGetTransaction(pay.inTxid, tx);
 			if (!in_tx) {
 				if (pay.counterTxDeepValidator < 20){
-					pay.save();
+					await pay.save();
 					return;
 				}
 				pay.update({
@@ -76,28 +76,28 @@ module.exports = async (pay, tx) => {
 				msgSendBack = `I can’t get transaction of _${pay.in_amount_message} ${pay.inCurrency}_ with Tx ID _${pay.inTxid}_ from _ ${pay.inCurrency}_ blockchain. It might be failed or cancelled. If you think it’s a mistake, contact my master.`;
 			} else {
 				pay.update({
-					sender: in_tx.sender,
-					recipient: in_tx.recipient,
+					senderReal: in_tx.sender,
+					recipientReal: in_tx.recipient,
 					inAmountReal: in_tx.amount
 				});
 
-				if (String(pay.sender).toLowerCase() !== String(pay.senderKvsInAddress).toLowerCase()) {
+				if (String(pay.senderReal).toLowerCase() !== String(pay.senderKvsInAddress).toLowerCase()) {
 					pay.update({
 						transactionIsValid: false,
 						isFinished: true,
 						error: 11
 					});
 					notifyType = 'warn';
-					msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Sender expected: _${pay.senderKvsInAddress}_, but real sender is _${pay.sender}_.`;
+					msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Sender expected: _${pay.senderKvsInAddress}_, but real sender is _${pay.senderReal}_.`;
 					msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
-				} else if (String(pay.recipient).toLowerCase() !== Store.user[pay.inCurrency].address.toLowerCase()) {
+				} else if (String(pay.recipientReal).toLowerCase() !== Store.user[pay.inCurrency].address.toLowerCase()) {
 					pay.update({
 						transactionIsValid: false,
 						isFinished: true,
 						error: 12
 					});
 					notifyType = 'warn';
-					msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Recipient expected: _${Store.user[pay.inCurrency].address}_, but real recipient is _${pay.recipient}_.`;
+					msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Recipient expected: _${Store.user[pay.inCurrency].address}_, but real recipient is _${pay.recipientReal}_.`;
 					msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
 				} else if (Math.abs(pay.inAmountReal - pay.inAmountMessage) > pay.inAmountReal * 0.005) {
 					pay.update({
@@ -109,11 +109,6 @@ module.exports = async (pay, tx) => {
 					msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Amount expected: _${pay.inAmountMessage}_, but real amount is _${pay.inAmountReal}_.`;
 					msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
 				} else { // Transaction is valid
-					if(!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
-						notifyType = 'info';
-						msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
-						msgSendBack = `I have validated and accepted your bet of ${pay.betMessageText}. I will notify you about results in ${Task.getBetDateString(pay.currentOrNext).tillString}. Wish you success!`;
-					}
 					pay.update({
 						transactionIsValid: true,
 						inConfirmations: 0
@@ -135,6 +130,7 @@ module.exports = async (pay, tx) => {
 };
 
 setInterval(async ()=>{
+	
 	const {paymentsDb} = db;
 	(await paymentsDb.find({
 		transactionIsValid: null,
@@ -147,4 +143,4 @@ setInterval(async ()=>{
 			module.exports(pay, null);
 		}
 	});
-}, 60 * 1000);
+}, 20 * 1000);

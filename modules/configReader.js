@@ -32,6 +32,10 @@ const fields = {
 		type: Array,
 		default: ['https://info.adamant.im']
 	},
+	cryptocompareApiKey: {
+		type: String,
+		isRequired: true
+	},
 	min_value_usd: {
 		type: Number,
 		default: 0.1

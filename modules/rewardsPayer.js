@@ -7,6 +7,7 @@ const notify = require('../helpers/notify');
 const rewardTxValidator = require('./rewardTxValidator');
 
 module.exports = async () => {
+
 	const {rewardsPayoutsDb} = db;
 
 	(await rewardsPayoutsDb.find({
@@ -34,19 +35,12 @@ module.exports = async () => {
 			needHumanCheck
 		} = payout;
 
-		// payout.update({
-		// 	isFinished: true
-		// }, true);
-		// // logString = `Amount is ${outAmount} ${outCurrency} for payout to ${addressString} / Tx ${itxId} (round ${betRound}). Skipping.`;
-		// log.info('finished ' + itxId);
-		// return;
-
 		// If round is not fully calculated yet, do nothing
 		const {roundsDb} = db;
 		payoutRound = await roundsDb.findOne({_id: betRound});
 		if(!payoutRound.packDate){
 			log.info(`Attempt to make payout for not fully calculated round ${betRound}. Will try next time.`);
-			// return;
+			return;
 		}
 
 		triesSendCounter += 1;
@@ -58,12 +52,6 @@ module.exports = async () => {
 		let logString = '';
 		let minRewardUsd = config.min_reward_usd;
 		let minRewardUsdF = $u.thousandSeparator(minRewardUsd, false);
-
-
-		// console.log(itxId);
-		// console.log(addressString);
-		// console.log(outAmount);
-		// return;
 
 		if (!outAmount || outAmount === 0){
 			payout.update({
@@ -136,4 +124,4 @@ module.exports = async () => {
 
 setInterval(() => {
 	module.exports();
-}, 10 * 1000);
+}, 60 * 1000);

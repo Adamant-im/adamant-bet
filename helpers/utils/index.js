@@ -147,6 +147,9 @@ module.exports = {
 			timeString = timeString + ' ' + mins + ' ' + this.incline(mins, 'min', 'mins');
 		}
 		timeString = timeString.trim();
+		if(timeString === '') {
+			timeString = '~0';
+		}
 
 		return timeString;
 	},
@@ -166,7 +169,9 @@ module.exports = {
 			timeString = timeString + ' ' + mins + ' ' + this.incline(mins, 'min', 'mins');
 		}
 		timeString = timeString.trim();
-
+		if(timeString === '') {
+			timeString = '~0';
+		}
 		return timeString;
 	},
 	ETH: eth_utils,

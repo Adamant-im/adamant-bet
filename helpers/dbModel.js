@@ -43,7 +43,7 @@ module.exports = (db) => {
 				await this.save();
 			}
 		}
-		save() {
+		async save() {
 			return new Promise((resolve, reject) => {
 				if (!this._id) {
 					db.insertOne(this._data(), (err, res) => {

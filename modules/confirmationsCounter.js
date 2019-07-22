@@ -34,10 +34,6 @@ module.exports = async () => {
 				admTxId
 			} = pay;
 
-			if (inTxStatus && inConfirmations >= config['min_confirmations_' + inCurrency]){
-				return;
-			}
-
 			if (!lastBlockNumber[inCurrency]){
 				log.warn('Cannot get lastBlockNumber for ' + inCurrency + '. Waiting for next try.');
 				return;
@@ -68,19 +64,20 @@ module.exports = async () => {
 				notifyType = 'error';
 				msgNotify = `Bet Bot ${Store.botName} notifies transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is Failed. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
 				msgSendBack = `Transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${inTxid}_ is Failed and will not be processed. Check _${pay.inCurrency}_ blockchain explorer and try again. If you think it’s a mistake, contact my master.`;
-			} else { // Tx verified
+			} else if (pay.inTxStatus && pay.inConfirmations >= config['min_confirmations_' + inCurrency]) { // Tx verified
 				pay.update({
 					transactionIsConfirmed: true
 				});
 				if(!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
 					notifyType = 'info';
 					msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
-					msgSendBack = `I have validated and accepted your bet of ${pay.betMessageText}. I will notify you about results in ${Task.getBetDateString(pay.currentOrNext).tillString}. Wish you success!`;
+					msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${Task.getBetDateString(pay.currentOrNext).tillString}. Wish you success!`;
 				}
 
 			}
 
 			await pay.save();
+
 			if (msgSendBack) {
 				notify(msgNotify, notifyType);
 				$u.sendAdmMsg(pay.senderId, msgSendBack);
@@ -93,4 +90,4 @@ module.exports = async () => {
 };
 setInterval(() => {
 	module.exports();
-}, 10 * 1000);
+}, 15 * 1000);

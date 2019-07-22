@@ -26,16 +26,13 @@ function init() {
 		db.systemDb.findOne().then(system => {
 			if (system) {
 				Store.lastBlock = system.lastBlock;
-				if(system.round){
-					Store.round = system.round;
-				} else {
-					Task.nextRound();
+				if (system.round) {
+					Store.updateSystem('round', system.round);
 				}
 			} else { // if fst start
 				Store.updateLastBlock();
-				Task.nextRound();
 			}
-
+			Task.checkRounds();
 			checker();
 		});
 	} catch (e) {

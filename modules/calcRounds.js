@@ -14,9 +14,12 @@ module.exports = async () => {
 
 	(await roundsDb.find({
 		packDate: null,
-	})).filter(r => r._id < Store.round)
+	})).filter(r => r._id < Store.round) // calc only ended rounds
 	.forEach(async cr => {
 		try {
+
+// TODO: use constant, not cr.
+
 
 			const {
 				_id,
@@ -86,7 +89,7 @@ module.exports = async () => {
 			let absTimeSinceEndDate = Math.abs(timeSinceEndDate);
 			let timeDeltaSec = absTimeSinceEndDate / 1000;
 
-			if (timeDeltaSec < 300) { // good, time diff less, than 300 sec
+			if (timeDeltaSec < 100) { // good, time diff less, than 100 sec
 				log.info(`Great, expected time difference in round calculation is ${timeDeltaSec} sec.`);
 
 			} else if (timeSinceEndDate < 0) {
@@ -153,6 +156,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 				betRound: cr._id,
 			})).filter(p => p.inConfirmations >= config['min_confirmations_' + p.inCurrency])
 				.forEach(async pay => {
+
 					const {
 						inAmountMessageUsd,
 						betRateValue,
@@ -164,9 +168,12 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 						weightedValueUsd
 					} = pay;
 
+					console.log(`1/ Payment for round ${cr._id}: Tx ${pay.admTxId} — ${pay.betMessageText}.`);
+
 					cr.totalBetsCount++;
 					cr.totalSumUsd+= pay.inAmountMessageUsd;
 
+					pay.isCalculated = true;
 					pay.isWinner = (pay.betRateValue < cr.rightMargin) && (pay.betRateValue > cr.leftMargin);
 					pay.betRateDelta = Math.abs(pay.betRateValue-cr.winBet);
 
@@ -181,6 +188,8 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 						pay.accuracyKoef = 0;
 						pay.weightedValueUsd = 0;
 					}
+
+					await pay.save();	
 
 					switch (pay.inCurrency){
 						case ('ETH'):
@@ -205,18 +214,23 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 							break;
 					}
 
-					pay.isCalculated = true;
-					await pay.save();	
+					await pay.save();	// make sure record saved until next .forEach (see below)
 				});
+
+				log.info(`Calculating reward pools for round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
+
+				await cr.save(); // make sure all value is saved
+				// console.log('!!!! cr:')
+				// console.log(cr)
 
 				cr.rewardPoolUsd = cr.totalSumUsd * (1-config.bureau_reward_percent/100);
 				cr.rewardPoolADM = cr.totalADMbetsSum * (1-config.bureau_reward_percent/100);
-				cr.rewardPoolETH = cr.totalETHbetsSum * (1-config.bureau_reward_percent/100);
+				cr.rewardPoolETH = cr.totalETHbetsSum * (1-config.bureau_reward_percent/100);				
 
 				log.info(`Calculating rewards and creating payouts for round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
 				(await paymentsDb.find({ // Calculating rewards and notify users
 					betRound: cr._id,
-					isCalculated: true,
+					// isCalculated: true, // pay.isCalculated is saving some time and payments may be excluded
 					isFinished: false
 				})).forEach(async pay2 => {
 						const {
@@ -237,6 +251,12 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 							payoutValueUsd
 						} = pay2;
 
+						console.log(`2/ Payment for round ${cr._id}: Tx ${pay2.admTxId} — ${pay2.betMessageText}.`);
+						if (!pay2.isCalculated) {
+							notify(`pay2.isCalculated not saved in DB yet for Tx ${pay2.admTxId} — ${pay2.betMessageText}. Need code refactoring.`, 'error');
+							return;
+						}
+
 						let msgSendBack = ``;
 						let rewardsString = [];
 						let newPayout;
@@ -246,6 +266,12 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 							pay2.payoutValueADM = pay2.rewardPercent * cr.rewardPoolADM;
 							pay2.payoutValueETH = pay2.rewardPercent * cr.rewardPoolETH;
 							pay2.payoutValueUsd = pay2.rewardPercent * cr.rewardPoolUsd;
+
+							// console.log('cr:')
+							// console.log(cr)
+
+							// console.log('pay2:')
+							// console.log(pay2)
 
 							const {rewardsPayoutsDb} = db;
 
@@ -326,7 +352,7 @@ Winners' bets — _${$u.thousandSeparator(cr.totalWinnersCount, false)}_ with _~
 				msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${$u.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
 				notify(msgNotify, 'log');
 
-				// currentRound.packDate = Date.now();
+				cr.packDate = Date.now();
 				await cr.save();
 				rewardsPayer();
 
@@ -338,4 +364,4 @@ Winners' bets — _${$u.thousandSeparator(cr.totalWinnersCount, false)}_ with _~
 
 setInterval(() => {
 	module.exports();
-}, 10 * 1000);
+}, 60 * 1000);

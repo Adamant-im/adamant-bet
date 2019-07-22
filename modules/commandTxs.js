@@ -34,22 +34,25 @@ module.exports = async (cmd, tx, itx) => {
 };
 
 function help() {
-	let personalFee = [];
-	let personalFeeString = '';
 
-	config.known_crypto.forEach(c=>{
-		if (config['exchange_fee_' + c] !== config.exchange_fee){
-			personalFee.push(`*${c}*: *${config['exchange_fee_' + c]}%*`);
-		};
-	});
+	const Task = require('../helpers/CronTask');
+	let str = `I am **online** and ready accept your bets on _${config.bet_currency}_ rate. I accept and pay rewards in _${config.accepted_crypto.join(', ')}_.`;
+	str += ` Current round _${Store.round}_ ends in _${Task.getBetDateString('current').tillString}_ (_${Task.getBetDateString('current').nextRoundTime}_).`;
 
-	if (personalFee.length){
-		personalFeeString = `In general, I take *${config.exchange_fee}%* for my work. But due to the rates fluctuation, if you send me these coins, fees differ — ` + personalFee.join(', ');
+	let isCoolPreriod = Task.ifCoolPeriod(Date.now());
+	if (isCoolPreriod) {
+		str += `
+
+**Note**: It is cool period—bets are accepted for next round _${Store.round+1}_ only, which ends in _${Task.getBetDateString('next').tillString}_ (_${Task.getBetDateString('next').nextRoundTime}_).`;
 	} else {
-		personalFeeString = `I take *${config.exchange_fee}%* for my work`;
+		str += ` I have cool period of _${config.cool_period_hours}_ hours when I don't accept bets for current round. So I will accept bets for round _${Store.round}_ until _${Task.coolPeriodStartDate().datestring}_.`;
 	}
 
-	let str = `I am **online** and ready for exchange. I accept *${config.accepted_crypto.join(', ')}* for exchange to *${config.exchange_crypto.join(', ')}*. ${personalFeeString}. I accept minimal equivalent of *${config.min_value_usd}* USD. Your daily limit is *${config.daily_limit_usd}* USD. Usually I wait for *${config.min_confirmations}* block confirmations for income transactions, but some coins may have different value.`;
+	str += `
+
+**Rules**: all bets for each round are collected together. I take _${config.bureau_reward_percent}%_ for my service, and distribute _${100-config.bureau_reward_percent}%_ among winners.`;
+	str += ` Your stake depends on Amount, forecast accuracy and time of bet. Earlier you place a bet, more stake you get. Winners guess _${config.bet_currency}_ rate ±_${config.win_price_range}_ USD.`;
+	str += ` _You can bet multiple times for different rates_. I accept minimal equivalent of _${config.min_value_usd}_ USD for betting and pay rewards greater then _${config.min_reward_usd}_ USD. Your daily limit is *${config.daily_limit_usd}* USD.`;
 
 	return str + `
 
@@ -59,11 +62,7 @@ I understand commands:
 
 **/calc** — I will calculate one coin value in another using market exchange rates. Works like this: */calc 2.05 BTC in USD*.
 
-**/balances** — I will show my crypto balances. Don’t request exchange if I don’t have enough balance for coin you need.
-
-**/test** — I will estimate and test exchange request. Do it before each exchange. Works like this: */test 0.35 ETH to ADM*. So you’ll know how much you’ll receive in return. I will pay blockchain fees by myself.
-
-**To make an exchange**, just send me crypto here in-Chat and comment with crypto ticker you want to get back. F. e., if you want to exchange 0.35 ETH for ADM, send in-Chat payment of 0.35 ETH to me with “ADM” comment.
+**To make a bet**, just send me crypto here in-Chat. Amount is your bet and comment is your _${config.bet_currency}_ forecast rate. F. e., if you want to make a bet of 0.35 ETH on 10 600 USD for _${config.bet_currency}_, send in-Chat payment of 0.35 ETH to me with “10600” comment.
 `;
 }
 
@@ -118,60 +117,6 @@ function calc(arr) {
 	return `Market value of ${$u.thousandSeparator(amount)} ${inCurrency} equals **${$u.thousandSeparator(result)} ${outCurrency}**.`;
 }
 
-async function test(arr, tx) {
-	if (arr.length !== 4) { // error request
-		return 'Wrong arguments. Command works like this: */test 0.35 ETH to ADM*.';
-	}
-
-	const amount = +arr[0];
-	const inCurrency = arr[1].toUpperCase().trim();
-	const outCurrency = arr[3].toUpperCase().trim();
-	const {accepted_crypto, exchange_crypto, daily_limit_usd} = config;
-
-	if (!amount || amount === Infinity){
-		return `It seems amount "*${amount}*" for *${inCurrency}* is not a number. Command works like this: */test 0.35 ETH to ADM*.`;
-	}
-	if (!$u.isKnown(inCurrency)) {
-		return `I don’t work with crypto *${inCurrency}*. Command works like this: */test 0.35 ETH to ADM*.`;
-	}
-	if (!$u.isKnown(outCurrency)) {
-		return `I don’t work with crypto *${outCurrency}*. Command works like this: */test 0.35 ETH to ADM*.`;
-	}
-	if (!$u.isExchanged(inCurrency)) {
-		return `Crypto *${inCurrency}* is not accepted. I accept *${accepted_crypto.join(', ')}* and exchange to *${exchange_crypto.join(', ')}*.`;
-	}
-	if (!$u.isAccepted(outCurrency)) {
-		return `I don’t exchange to *${outCurrency}*. I accept *${accepted_crypto.join(', ')}* and exchange to *${exchange_crypto.join(', ')}*.`;
-	}
-	if (inCurrency === outCurrency){
-		return `Do you really want to exchange *${inCurrency}* for *${outCurrency}*? You are kidding!`;
-	}
-
-	let result = Store.cryptoConvert(inCurrency, outCurrency, amount);
-
-	if (amount <= 0 || result <= 0 || !result) {
-		return `I didn’t understand amount for *${inCurrency}*. Command works like this: */test 0.35 ETH to ADM*.`;
-	}
-
-	const usdEqual = Store.cryptoConvert(inCurrency, 'USD', amount).outAmount;
-	if (usdEqual < config.min_value_usd) {
-		return `I don’t accept exchange of crypto below minimum value of *${config.min_value_usd}* USD. Exchange more coins.`;
-	}
-	if (tx){
-		const userDailiValue = await $u.userDailiValue(tx.senderId);
-		if (userDailiValue >= daily_limit_usd){
-			return `You have exceeded maximum daily volume of *${daily_limit_usd}* USD. Come back tomorrow.`;
-		} else if (userDailiValue + usdEqual >= daily_limit_usd){
-			return `This exchange will exceed maximum daily volume of *${daily_limit_usd}* USD. Exchange less coins.`;
-		}
-	}
-	if (result + $u[outCurrency].FEE > Store.user[outCurrency].balance) {
-		return `I have not enough coins to send *${result}* *${outCurrency}* for exchange. Check my balances with **/balances** command.`;
-	}
-
-	return `Ok. Let's make a bargain. I’ll give you *${result}* *${outCurrency}*. To proceed, send me *${amount}* *${inCurrency}* here In-Chat with comment "${outCurrency}". Don’t write anything else in comment, otherwise I will send transfer back to you. And hurry up, while exchange rate is so good!`;
-}
-
 function balances() {
 	return config.exchange_crypto.reduce((str, c) => {
 		return str + `
@@ -180,7 +125,7 @@ function balances() {
 }
 
 function version(){
-	return `I am running on _adamant-exchangebot_ software version _${Store.version}_. Revise code on ADAMANT's GitHub.`;
+	return `I am running on _adamant-betbot_ software version _${Store.version}_. Revise code on ADAMANT's GitHub.`;
 }
 
 
@@ -188,19 +133,5 @@ const commands = {
 	help,
 	rates,
 	calc,
-	balances,
-	test,
 	version
 };
-
-
-// setTimeout(()=>{
-// 	unitTest('/calc Infinity BTC in USD');
-// 	unitTest('/test Infinity BTC in USD');
-// 	unitTest('/test 35 adm to adm');
-// 	unitTest('/rates');
-// }, 3000);
-
-// async function unitTest(cmd){
-// 	console.log(cmd, '->', await module.exports(cmd));
-// }

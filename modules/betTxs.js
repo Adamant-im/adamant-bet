@@ -165,8 +165,8 @@ module.exports = async (itx, tx) => {
 			earlyBetKoef
 		});
 
-		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessage}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
-		msgSendBack = `I understood your bet of ${betMessage}.${periodString} Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
+		msgNotify = `Bet Bot ${Store.botName} notifies about incoming bet of ${betMessageText}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+		msgSendBack = `I understood your bet of ${betMessageText}.${periodString} Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
 	}
 
 	await pay.save();

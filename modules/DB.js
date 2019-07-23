@@ -8,7 +8,7 @@ mongoClient.connect((err, client) => {
 	if (err) {
 		throw (err);
 	}
-	const db = client.db("excahngesdb");
+	const db = client.db("betsdb");
 	collections.db = db;
 	collections.systemDb = model(db.collection("systems"));
 	collections.incomingTxsDb = model(db.collection("incomingtxs"));

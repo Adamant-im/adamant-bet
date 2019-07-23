@@ -29,7 +29,7 @@ module.exports = async () => {
 				inConfirmations,
 				inCurrency,
 				inTxid,
-				inAmount,
+				inAmountMessage,
 				inTxStatus,
 				isKVSnotFoundNotified,
 				admTxId
@@ -41,13 +41,13 @@ module.exports = async () => {
 			}
 			const txData = (await $u[inCurrency].getTransactionStatus(inTxid));
 			if (!txData || !txData.blockNumber){
-				log.warn(`Cannot get txData to calc confirmations for transaction _${inTxid}_ of _${inAmount}_ _${inCurrency}_. Waiting for next try.`);
+				log.warn(`Cannot get txData to calc confirmations for transaction _${inTxid}_ of _${inAmountMessage}_ _${inCurrency}_. Waiting for next try.`);
 				return;
 			}
 			const {status, blockNumber} = txData;
 
 			if (!blockNumber) {
-				log.warn(`Cannot get blockNumber to calc confirmations for transaction _${inTxid}_ of _${inAmount}_ _${inCurrency}_. Waiting for next try.`);
+				log.warn(`Cannot get blockNumber to calc confirmations for transaction _${inTxid}_ of _${inAmountMessage}_ _${inCurrency}_. Waiting for next try.`);
 				return;
 			}
 

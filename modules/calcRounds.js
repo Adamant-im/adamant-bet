@@ -5,7 +5,7 @@ const $u = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
-const rewardsPayer = require('./rewardsPayer');
+const calcWinners = require('./calcWinners');
 const ccRate = require('../helpers/getCryptoCompareRate');
 
 module.exports = async () => {
@@ -14,20 +14,19 @@ module.exports = async () => {
 
 	(await roundsDb.find({
 		packDate: null,
-	})).filter(r => r._id < Store.round) // calc only ended rounds
+		_id: {$lt: Store.round} // calc only ended rounds
+	}))
 	.forEach(async cr => {
 		try {
 
-// TODO: use constant, not cr.
-
-
-			const {
+			let {
 				_id,
 				duration,
 				createDate,
 				endDate,
 				packDate,
 				frozenFor24hoursFrom,
+				fullRoundDuration,
 
 				winBet,
 				rightMargin,
@@ -57,35 +56,35 @@ module.exports = async () => {
 				totalWinnersWeightedPoolUsd
 			} = cr;
 
-			let infoString = `Packing round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`;
-            infoString += ` Round created: ${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(cr.duration)}.`;
-            infoString += ` Round end date: ${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}.`;
+			let infoString = `Packing round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`;
+            infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(duration)}.`;
+            infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(fullRoundDuration)}.`;
 			log.info(infoString);
 
-			cr.totalBetsCount = 0;
-			cr.totalSumUsd = 0;
-			cr.totalADMbetsCount = 0;
-			cr.totalETHbetsCount = 0;
-			cr.totalADMbetsSum = 0;
-			cr.totalETHbetsSum = 0;
-			cr.totalADMbetsSumUsd = 0;
-			cr.totalETHbetsSumUsd = 0;
-			cr.totalWinnersCount = 0;
-			cr.totalWinnersADMCount = 0;
-			cr.totalWinnersETHCount = 0;
-			cr.totalWinnersETHSum = 0;
-			cr.totalWinnersADMSum = 0;
-			cr.totalWinnersUsdSum = 0;
-			cr.totalWinnersADMSumUsd = 0;
-			cr.totalWinnersETHSumUsd = 0;
-			cr.rewardPoolUsd = 0;
-			cr.rewardPoolADM = 0;
-			cr.rewardPoolETH = 0;
-			cr.totalWinnersWeightedPoolUsd = 0;
-			cr.betCurrency = config.bet_currency;
+			totalBetsCount = 0;
+			totalSumUsd = 0;
+			totalADMbetsCount = 0;
+			totalETHbetsCount = 0;
+			totalADMbetsSum = 0;
+			totalETHbetsSum = 0;
+			totalADMbetsSumUsd = 0;
+			totalETHbetsSumUsd = 0;
+			totalWinnersCount = 0;
+			totalWinnersADMCount = 0;
+			totalWinnersETHCount = 0;
+			totalWinnersETHSum = 0;
+			totalWinnersADMSum = 0;
+			totalWinnersUsdSum = 0;
+			totalWinnersADMSumUsd = 0;
+			totalWinnersETHSumUsd = 0;
+			rewardPoolUsd = 0;
+			rewardPoolADM = 0;
+			rewardPoolETH = 0;
+			totalWinnersWeightedPoolUsd = 0;
+			betCurrency = config.bet_currency;
 
 			// When do we start calculating round results?
-			let timeSinceEndDate = Date.now() - cr.endDate;
+			let timeSinceEndDate = Date.now() - endDate;
 			let absTimeSinceEndDate = Math.abs(timeSinceEndDate);
 			let timeDeltaSec = absTimeSinceEndDate / 1000;
 
@@ -94,16 +93,16 @@ module.exports = async () => {
 
 			} else if (timeSinceEndDate < 0) {
 				
-				if (!cr.frozenFor24hoursFrom) {
+				if (!frozenFor24hoursFrom) {
 
-					let tempWinBetNow = await ccRate.getFreshCryptoRate(cr.betCurrency, Date.now());
+					let tempWinBetNow = await ccRate.getFreshCryptoRate(betCurrency, Date.now());
 					infoString = `*Something is wrong*. We are calculating results for round which doesn't end yet. Is _bet_period_cron_pattern_ changed in config? Check everything carefully!`;
 					infoString += `
 
-Round _${cr._id}_ will end on _${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
-					infoString += ` Round created: _${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${$u.timeDiffDaysHoursMins(cr.duration)}_.`;
-					infoString += ` Full round duration: _${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}_.`;
-					infoString += ` Actual bet rate now: _${$u.thousandSeparator(tempWinBetNow, false)}_ USD for _${cr.betCurrency}_.`;
+Round _${_id}_ will end on _${moment(endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
+					infoString += ` Round created: _${moment(createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${$u.timeDiffDaysHoursMins(duration)}_.`;
+					infoString += ` Full round duration: _${$u.timeDiffDaysHoursMins(fullRoundDuration)}_.`;
+					infoString += ` Actual bet rate now: _${$u.thousandSeparator(tempWinBetNow, false)}_ USD for _${betCurrency}_.`;
 
 					infoString += `
 					
@@ -116,11 +115,11 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 					notify(infoString, 'error');
 					return;
 	
-				} else if ($u.timeDiff(Date.now(), cr.frozenFor24hoursFrom, 'hours') < 24) {
+				} else if ($u.timeDiff(Date.now(), frozenFor24hoursFrom, 'hours') < 24) {
 					return;
 
 				} else { // More, then 24 hours passed. Continue
-					infoString = `No action is taken about warning for round _${cr._id}_. Calculation will be continued and reward payments processed.`;
+					infoString = `No action is taken about warning for round _${_id}_. Calculation will be continued and reward payments processed.`;
 					notify(infoString, 'warn');
 
 				}
@@ -132,29 +131,30 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 
 			}
 
-			// TODO: check cr.endDate in Future?
-			cr.winBet = await ccRate.getFreshCryptoRate(cr.betCurrency, cr.endDate);
+			// TODO: check endDate in Future?
+			winBet = await ccRate.getFreshCryptoRate(betCurrency, endDate);
 
-			if (!cr.winBet) {
-				log.warn(`Round calculation stopped as didn't received crypto rate for ${cr.betCurrency} on ${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}. Will try next time.`);
+			if (!winBet) {
+				log.warn(`Round calculation stopped as didn't received crypto rate for ${betCurrency} on ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Will try next time.`);
 				return;
 			}
 
-			cr.winPriceRange = config.win_price_range;
-			cr.leftMargin = cr.winBet - cr.winPriceRange;
-			cr.rightMargin = cr.winBet + cr.winPriceRange;
+			winPriceRange = config.win_price_range;
+			leftMargin = winBet - winPriceRange;
+			rightMargin = winBet + winPriceRange;
 
 			const {paymentsDb} = db;
 
-			log.info(`Calculating all of validated transactions for round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
-			(await paymentsDb.find({ // Select all of validated transactions for this round
+			log.info(`Calculating all of validated transactions for round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
+			await (await paymentsDb.find({ // Select all of validated transactions for this round
+				transactionIsConfirmed: true,
 				transactionIsValid: true,
 				transactionIsFailed: false,
 				needToSendBack: false,
 				needHumanCheck: false,
 				inTxStatus: true,
-				betRound: cr._id,
-			})).filter(p => p.inConfirmations >= config['min_confirmations_' + p.inCurrency])
+				betRound: _id
+			}))
 				.forEach(async pay => {
 
 					const {
@@ -168,172 +168,58 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 						weightedValueUsd
 					} = pay;
 
-					console.log(`1/ Payment for round ${cr._id}: Tx ${pay.admTxId} — ${pay.betMessageText}.`);
+					console.log(`1/ Payment for round ${_id}: Tx ${pay.admTxId} — ${pay.betMessageText}.`);
 
-					cr.totalBetsCount++;
-					cr.totalSumUsd+= pay.inAmountMessageUsd;
+					totalBetsCount++;
+					totalSumUsd+= pay.inAmountMessageUsd;
 
 					pay.isCalculated = true;
-					pay.isWinner = (pay.betRateValue < cr.rightMargin) && (pay.betRateValue > cr.leftMargin);
-					pay.betRateDelta = Math.abs(pay.betRateValue-cr.winBet);
+					pay.isWinner = (pay.betRateValue < rightMargin) && (pay.betRateValue > leftMargin);
+					pay.betRateDelta = Math.abs(pay.betRateValue-winBet);
 
 					if(pay.isWinner){
-						pay.accuracyKoef = 1 + (cr.winPriceRange - pay.betRateDelta) / cr.winPriceRange;
+						pay.accuracyKoef = 1 + (winPriceRange - pay.betRateDelta) / winPriceRange;
 						pay.weightedValueUsd = pay.accuracyKoef * pay.earlyBetKoef * pay.inAmountMessageUsd;
 
-						cr.totalWinnersCount++;
-						cr.totalWinnersUsdSum+= pay.inAmountMessageUsd;
-						cr.totalWinnersWeightedPoolUsd+= pay.weightedValueUsd;
+						totalWinnersCount++;
+						totalWinnersUsdSum+= pay.inAmountMessageUsd;
+						totalWinnersWeightedPoolUsd+= pay.weightedValueUsd;
 					} else {
 						pay.accuracyKoef = 0;
 						pay.weightedValueUsd = 0;
 					}
 
-					await pay.save();	
-
 					switch (pay.inCurrency){
 						case ('ETH'):
-							cr.totalETHbetsCount++;
-							cr.totalETHbetsSum+= pay.inAmountMessage;
-							cr.totalETHbetsSumUsd+= pay.inAmountMessageUsd;
+							totalETHbetsCount++;
+							totalETHbetsSum+= pay.inAmountMessage;
+							totalETHbetsSumUsd+= pay.inAmountMessageUsd;
 							if(pay.isWinner){
-								cr.totalWinnersETHCount++;
-								cr.totalWinnersETHSum+= pay.inAmountMessage;
-								cr.totalWinnersETHSumUsd+= pay.inAmountMessageUsd;
+								totalWinnersETHCount++;
+								totalWinnersETHSum+= pay.inAmountMessage;
+								totalWinnersETHSumUsd+= pay.inAmountMessageUsd;
 							}					
 							break;
 						case ('ADM'):
-							cr.totalADMbetsCount++;
-							cr.totalADMbetsSum+= pay.inAmountMessage;
-							cr.totalADMbetsSumUsd+= pay.inAmountMessageUsd;						
+							totalADMbetsCount++;
+							totalADMbetsSum+= pay.inAmountMessage;
+							totalADMbetsSumUsd+= pay.inAmountMessageUsd;						
 							if(pay.isWinner){
-								cr.totalWinnersADMCount++;
-								cr.totalWinnersADMSum+= pay.inAmountMessage;
-								cr.totalWinnersADMSumUsd+= pay.inAmountMessageUsd;
+								totalWinnersADMCount++;
+								totalWinnersADMSum+= pay.inAmountMessage;
+								totalWinnersADMSumUsd+= pay.inAmountMessageUsd;
 							}					
 							break;
 					}
 
-					await pay.save();	// make sure record saved until next .forEach (see below)
+					await pay.save();
 				});
 
-				log.info(`Calculating reward pools for round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
+				// might not be calculated YET?
 
-				await cr.save(); // make sure all value is saved
-				// console.log('!!!! cr:')
-				// console.log(cr)
-
-				cr.rewardPoolUsd = cr.totalSumUsd * (1-config.bureau_reward_percent/100);
-				cr.rewardPoolADM = cr.totalADMbetsSum * (1-config.bureau_reward_percent/100);
-				cr.rewardPoolETH = cr.totalETHbetsSum * (1-config.bureau_reward_percent/100);				
-
-				log.info(`Calculating rewards and creating payouts for round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
-				(await paymentsDb.find({ // Calculating rewards and notify users
-					betRound: cr._id,
-					// isCalculated: true, // pay.isCalculated is saving some time and payments may be excluded
-					isFinished: false
-				})).forEach(async pay2 => {
-						const {
-							isFinished,
-							isWinner,
-							admTxId,
-							senderId,
-							senderKvsADMAddress,
-							senderKvsETHAddress,
-							accuracyKoef,
-							earlyBetKoef,
-							betRound,
-							betMessageText,
-							weightedValueUsd,
-							rewardPercent,
-							payoutValueADM,
-							payoutValueETH,
-							payoutValueUsd
-						} = pay2;
-
-						console.log(`2/ Payment for round ${cr._id}: Tx ${pay2.admTxId} — ${pay2.betMessageText}.`);
-						if (!pay2.isCalculated) {
-							notify(`pay2.isCalculated not saved in DB yet for Tx ${pay2.admTxId} — ${pay2.betMessageText}. Need code refactoring.`, 'error');
-							return;
-						}
-
-						let msgSendBack = ``;
-						let rewardsString = [];
-						let newPayout;
-
-						if(pay2.isWinner){
-							pay2.rewardPercent = pay2.weightedValueUsd / cr.totalWinnersWeightedPoolUsd;
-							pay2.payoutValueADM = pay2.rewardPercent * cr.rewardPoolADM;
-							pay2.payoutValueETH = pay2.rewardPercent * cr.rewardPoolETH;
-							pay2.payoutValueUsd = pay2.rewardPercent * cr.rewardPoolUsd;
-
-							// console.log('cr:')
-							// console.log(cr)
-
-							// console.log('pay2:')
-							// console.log(pay2)
-
-							const {rewardsPayoutsDb} = db;
-
-							// If no payout Tx added earlier, add it now for each of accepted coins
-							let checkedTx;
-							config.accepted_crypto.forEach(async (coin) => {
-								const senderKvsFieldName = 'senderKvs' + coin + 'Address';
-								const payoutValueFieldName = 'payoutValue' + coin;
-								rewardsString.push(`**${$u.thousandSeparator(+(pay2[payoutValueFieldName].toFixed(8)), false)}** _${coin}_`);
-
-								checkedTx = await rewardsPayoutsDb.findOne({admTxId: pay2.itxId, outCurrency: coin});
-								if (checkedTx === null) {					
-									newPayout = new rewardsPayoutsDb({
-										itxId: pay2.admTxId,
-										senderId: pay2.senderId,
-										isFinished: false,
-										isPaused: false,
-										triesSendCounter: 0,
-										triesValidateCounter: 0,
-										betRound: pay2.betRound,
-										winBet: cr.winBet,
-										accuracyKoef: pay2.accuracyKoef,
-										earlyBetKoef: pay2.earlyBetKoef,
-										calcDate: Date.now(),
-										senderKvsOutAddress: pay2[senderKvsFieldName],
-										betMessageText: pay2.betMessageText,
-										outCurrency: coin,
-										outAmount: +(pay2[payoutValueFieldName].toFixed(8)),
-										outAmountF: $u.thousandSeparator(+(pay2[payoutValueFieldName].toFixed(8)), false),
-										outAmountUsd: Store.cryptoConvert(coin, 'USD', pay2[payoutValueFieldName]),
-										outAmountUsdF: $u.thousandSeparator(Store.cryptoConvert(coin, 'USD', pay2[payoutValueFieldName])),
-										outTxid: null,
-										needHumanCheck: null
-									});
-
-									await newPayout.save();	
-								};
-							});
-							
-							msgSendBack = `**Bingo!** Your bet of ${pay2.betMessageText} won! Actual rate is _${$u.thousandSeparator(cr.winBet, false)}_ USD, accuracy coef — _${pay2.accuracyKoef.toFixed(2)}_. Early bet coef is _${pay2.earlyBetKoef.toFixed(2)}_.`;
-							msgSendBack += `
-
-Rewards are: ${rewardsString.join(', ')} (_~${$u.thousandSeparator(pay2.payoutValueUsd.toFixed(2), false)} USD_ at time of bets placed).`; 
-							msgSendBack += ` I will send these funds soon, please be patient. Wish you luck next rounds!`;
-
-						} else { // if isWinner === false
-							msgSendBack = `D'oh! Your bet of ${pay2.betMessageText} lose. Actual rate is _${$u.thousandSeparator(cr.winBet, false)}_ USD. Wish you luck next rounds!`;
-						}
-						
-						let logString = '';
-						logString = `Round ${cr._id} results for ${pay2.senderId} / ${pay2.admTxId}: ${pay2.isWinner}.`;
-						logString += ` Actual rate: ${$u.thousandSeparator(cr.winBet, false)} USD, accuracy coef: ${pay2.accuracyKoef.toFixed(2)}, Early bet coef: ${pay2.earlyBetKoef.toFixed(2)}.`;
-						if(pay2.isWinner){
-							logString += ` Rewards are: ${rewardsString.join(', ')} (~${$u.thousandSeparator(pay2.payoutValueUsd.toFixed(2), false)} USD at time of bets placed).`;
-						}	
-						logString += ` Bet message text: ${pay2.betMessageText}.`;
-
-						log.info(logString);
-						$u.sendAdmMsg(pay2.senderId, msgSendBack);
-						pay2.isFinished = true;
-						await pay2.save();	
-					});
+				cr.rewardPoolUsd = totalSumUsd * (1-config.bureau_reward_percent/100);
+				cr.rewardPoolADM = totalADMbetsSum * (1-config.bureau_reward_percent/100);
+				cr.rewardPoolETH = totalETHbetsSum * (1-config.bureau_reward_percent/100);				
 
 				poolsString = [];
 				config.accepted_crypto.forEach(async (coin) => {
@@ -343,23 +229,54 @@ Rewards are: ${rewardsString.join(', ')} (_~${$u.thousandSeparator(pay2.payoutVa
 
 				// console.log('currentRound', currentRound);
 				let msgNotify = '';
-				msgNotify = `Finished packing round number _${cr._id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_.`;
-				msgNotify += ` Win rate: _${$u.thousandSeparator(cr.winBet, false)}_ USD for 1 _${cr.betCurrency}_.`;
-				msgNotify += ` Total bets — _${$u.thousandSeparator(cr.totalBetsCount, false)}_ with _~${$u.thousandSeparator(cr.totalSumUsd.toFixed(2), false)}_ USD wagered.`;
+				msgNotify = `Finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_.`;
+				msgNotify += ` Win rate: _${$u.thousandSeparator(winBet, false)}_ USD for 1 _${betCurrency}_.`;
+				msgNotify += ` Total bets — _${$u.thousandSeparator(totalBetsCount, false)}_ with _~${$u.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered.`;
 				msgNotify += ` 
 
-Winners' bets — _${$u.thousandSeparator(cr.totalWinnersCount, false)}_ with _~${$u.thousandSeparator(cr.totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
-				msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${$u.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
+Winners' bets — _${$u.thousandSeparator(totalWinnersCount, false)}_ with _~${$u.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
+				msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${$u.thousandSeparator(rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
 				notify(msgNotify, 'log');
 
-				cr.packDate = Date.now();
-				await cr.save();
-				rewardsPayer();
+				packDate = Date.now();
+				await cr.update({
+					packDate,
+					frozenFor24hoursFrom,
+	
+					winBet,
+					rightMargin,
+					leftMargin,
+					betCurrency,
+					winPriceRange,
+	
+					totalBetsCount,
+					totalSumUsd,
+					totalADMbetsCount,
+					totalETHbetsCount,
+					totalADMbetsSum,
+					totalETHbetsSum,
+					totalADMbetsSumUsd,
+					totalETHbetsSumUsd,
+					totalWinnersCount,
+					totalWinnersADMCount,
+					totalWinnersETHCount,
+					totalWinnersETHSum,
+					totalWinnersADMSum,
+					totalWinnersUsdSum,
+					totalWinnersADMSumUsd,
+					totalWinnersETHSumUsd,
+					rewardPoolUsd,
+					rewardPoolADM,
+					rewardPoolETH,
+					totalWinnersWeightedPoolUsd
+				}, true);
 
 			} catch (e) {
-			log.error('Error in updateRounds module: ' + e);
+			log.error('Error in calcRounds module: ' + e);
 		}
 	});
+
+	calcWinners();
 }
 
 setInterval(() => {

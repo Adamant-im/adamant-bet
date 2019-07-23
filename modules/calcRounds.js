@@ -59,7 +59,7 @@ module.exports = async () => {
 
 			let infoString = `Packing round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`;
             infoString += ` Round created: ${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(cr.duration)}.`;
-            infoString += ` Round end date: ${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}. Regular (full) round duration: ${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}.`;
+            infoString += ` Round end date: ${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}.`;
 			log.info(infoString);
 
 			cr.totalBetsCount = 0;
@@ -102,7 +102,7 @@ module.exports = async () => {
 
 Round _${cr._id}_ will end on _${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
 					infoString += ` Round created: _${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${$u.timeDiffDaysHoursMins(cr.duration)}_.`;
-					infoString += ` Regular (full) round duration: _${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}_.`;
+					infoString += ` Full round duration: _${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}_.`;
 					infoString += ` Actual bet rate now: _${$u.thousandSeparator(tempWinBetNow, false)}_ USD for _${cr.betCurrency}_.`;
 
 					infoString += `

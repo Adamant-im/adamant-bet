@@ -76,7 +76,7 @@ module.exports = {
 
             let infoString = `New round number ${newRound._id} started at ${moment(newRound.createDate).format('YYYY/MM/DD HH:mm Z')}.`;
             infoString += ` End date: ${moment(newRound.endDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(newRound.duration)}.`;
-            infoString += ` Regular (full) round duration: ${$u.timeDiffDaysHoursMins(newRound.fullRoundDuration)}.`;
+            infoString += ` Full round duration: ${$u.timeDiffDaysHoursMins(newRound.fullRoundDuration)}.`;
             notify(infoString, 'log');
 
 			Store.updateSystem('round', round);

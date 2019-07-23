@@ -119,6 +119,11 @@ module.exports = {
 		var hours = this.timeDiff(dateNext +1000, datePrev, 'hours') % 24;
 		var mins = this.timeDiff(dateNext +1000, datePrev, 'minutes') % 60;
 
+		console.log('dateNext ' + dateNext);
+		console.log('datePrev ' + datePrev);
+		console.log('mins: ' + mins);
+		console.log('mins2: ' + this.timeDiff(dateNext, datePrev, 'minutes') % 60);
+
 		// if (mins === 59 && )
 
 		if(days > 0) {

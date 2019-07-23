@@ -14,7 +14,8 @@ module.exports = {
 	sendAdmMsg(address, msg, type = 'message') {
 		if (msg && !config.isDev || true) {
 			try {
-				return api.send(config.passPhrase, address, msg, type).success || false;
+				let msg_markdown = msg.replace(/[^\*]\*[^\*]/g, '**');
+				return api.send(config.passPhrase, address, msg_markdown, type).success || false;
 			} catch (e) {
 				return false;
 			}
@@ -91,34 +92,15 @@ module.exports = {
 		const pairs = Object.keys(Store.currencies).toString();
 		return pairs.includes(',' + coin + '/') || pairs.includes('/' + coin);
 	},
-	timeDiff(dateNext, datePrev, interval) {
+	timeDiff(dateNext, datePrev, interval) { // if no value for datePrev provided, suppose dateNext is timediff
 		var second=1000, minute=second*60, hour=minute*60, day=hour*24, week=day*7;
-		var timediff = dateNext - datePrev;
+		var timediff = datePrev ? dateNext - datePrev : dateNext;
 		if (isNaN(timediff)) return NaN;
+
 		switch (interval) {
 			case "years": return dateNext.getFullYear() - datePrev.getFullYear();
 			case "months": return (
-				( dateNext.getFullYear() * 12 + dateNext.getMonth() )
-				-
-				( datePrev.getFullYear() * 12 + datePrev.getMonth() )
-			);
-			case "weeks"  : return Math.floor(timediff / week);
-			case "days"   : return Math.floor(timediff / day); 
-			case "hours"  : return Math.floor(timediff / hour); 
-			case "minutes": return Math.floor(timediff / minute);
-			case "seconds": return Math.floor(timediff / second);
-			default: return undefined;
-		}
-	},
-	timeIntervalString(timediff, interval) {
-		var second=1000, minute=second*60, hour=minute*60, day=hour*24, week=day*7;
-		if (isNaN(timediff)) return NaN;
-		switch (interval) {
-			case "years": return dateNext.getFullYear() - datePrev.getFullYear();
-			case "months": return (
-				( dateNext.getFullYear() * 12 + dateNext.getMonth() )
-				-
-				( datePrev.getFullYear() * 12 + datePrev.getMonth() )
+				(dateNext.getFullYear() * 12 + dateNext.getMonth()) -	(datePrev.getFullYear() * 12 + datePrev.getMonth())
 			);
 			case "weeks"  : return Math.floor(timediff / week);
 			case "days"   : return Math.floor(timediff / day); 
@@ -133,9 +115,11 @@ module.exports = {
 	},
 	timeDiffDaysHoursMins(dateNext, datePrev) {
 		var timeString = '';
-		var days = this.timeDiff(dateNext, datePrev, 'days');
-		var hours = this.timeDiff(dateNext, datePrev, 'hours') % 24;
-		var mins = this.timeDiff(dateNext, datePrev, 'minutes') % 60;
+		var days = this.timeDiff(dateNext +1000, datePrev, 'days');
+		var hours = this.timeDiff(dateNext +1000, datePrev, 'hours') % 24;
+		var mins = this.timeDiff(dateNext +1000, datePrev, 'minutes') % 60;
+
+		// if (mins === 59 && )
 
 		if(days > 0) {
 			timeString = timeString + days + ' ' + this.incline(days, 'day', 'days');
@@ -151,27 +135,6 @@ module.exports = {
 			timeString = '~0';
 		}
 
-		return timeString;
-	},
-	timeIntervalDaysHoursMins(timediff) {
-		var timeString = '';
-		var days = this.timeIntervalString(timediff, 'days');
-		var hours = this.timeIntervalString(timediff, 'hours') % 24;
-		var mins = this.timeIntervalString(timediff, 'minutes') % 60;
-
-		if(days > 0) {
-			timeString = timeString + days + ' ' + this.incline(days, 'day', 'days');
-		}
-		if((days < 7) && (hours > 0)) {
-			timeString = timeString + ' ' + hours + ' ' + this.incline(hours, 'hour', 'hours');
-		}
-		if((days === 0) && (mins > 0)) {
-			timeString = timeString + ' ' + mins + ' ' + this.incline(mins, 'min', 'mins');
-		}
-		timeString = timeString.trim();
-		if(timeString === '') {
-			timeString = '~0';
-		}
 		return timeString;
 	},
 	ETH: eth_utils,

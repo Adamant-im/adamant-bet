@@ -29,6 +29,7 @@ module.exports = async () => {
 				inConfirmations,
 				inCurrency,
 				inTxid,
+				inAmount,
 				inTxStatus,
 				isKVSnotFoundNotified,
 				admTxId
@@ -71,7 +72,7 @@ module.exports = async () => {
 				if(!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
 					notifyType = 'info';
 					msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
-					msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${Task.getBetDateString(pay.currentOrNext).tillString}. Wish you success!`;
+					msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${$u.timeDiffDaysHoursMins(pay.betRoundEndTime, Date.now())}. Wish you success!`;
 				}
 
 			}
@@ -83,7 +84,7 @@ module.exports = async () => {
 				$u.sendAdmMsg(pay.senderId, msgSendBack);
 			}
 		} catch (e) {
-			log.error('Error in ConformationsCounter module: ' + e);
+			log.error('Error in ConfirmationsCounter module: ' + e);
 		}
 	});
 

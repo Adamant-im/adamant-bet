@@ -18,7 +18,7 @@ module.exports = async (cmd, tx, itx) => {
 		if (m){
 			msg = await m(group, tx);
 		} else {
-			msg = `I don’t know */${methodName}* command. ℹ️ You can start with **/help**.`;
+			msg = `I don’t know _/${methodName}_ command. ℹ️ You can start with **/help**.`;
 		}
 		if (!tx){
 			return msg;
@@ -36,40 +36,41 @@ module.exports = async (cmd, tx, itx) => {
 function help() {
 
 	const Task = require('../helpers/CronTask');
-	let str = `I am **online** and ready accept your bets on _${config.bet_currency}_ rate. I accept and pay rewards in _${config.accepted_crypto.join(', ')}_.`;
-	str += ` Current round _${Store.round}_ ends in _${Task.getBetDateString('current').tillString}_ (_${Task.getBetDateString('current').nextRoundTime}_).`;
+	let str = `I am **online** and ready to accept your bets on _${config.bet_currency}_ rate. I accept and pay rewards in _${config.accepted_crypto.join(', ')}_.`;
+	str += ` Current round _${Store.round}_ ends in _${Task.getBetDateString('current').tillString}_ (${Task.getBetDateString('current').nextRoundTime}).`;
 
 	let isCoolPreriod = Task.ifCoolPeriod(Date.now());
 	if (isCoolPreriod) {
 		str += `
 
-**Note**: It is cool period—bets are accepted for next round _${Store.round+1}_ only, which ends in _${Task.getBetDateString('next').tillString}_ (_${Task.getBetDateString('next').nextRoundTime}_).`;
+**Note**: It is cool period—bets are accepted for next round _${Store.round+1}_ only, which ends in _${Task.getBetDateString('next').tillString}_ (${Task.getBetDateString('next').nextRoundTime}).`;
 	} else {
-		str += ` I have cool period of _${config.cool_period_hours}_ hours when I don't accept bets for current round. So I will accept bets for round _${Store.round}_ until _${Task.coolPeriodStartDate().datestring}_.`;
+		str += ` I have cool period of _${config.cool_period_hours}_ hours when I don't accept bets for current round. So I will accept bets for round _${Store.round}_ until ${Task.coolPeriodStartDate().datestring}.`;
 	}
 
 	str += `
 
 **Rules**: all bets for each round are collected together. I take _${config.bureau_reward_percent}%_ for my service, and distribute _${100-config.bureau_reward_percent}%_ among winners.`;
-	str += ` Your stake depends on Amount, forecast accuracy and time of bet. Earlier you place a bet, more stake you get. Winners guess _${config.bet_currency}_ rate ±_${config.win_price_range}_ USD.`;
-	str += ` _You can bet multiple times for different rates_. I accept minimal equivalent of _${config.min_value_usd}_ USD for betting and pay rewards greater then _${config.min_reward_usd}_ USD. Your daily limit is *${config.daily_limit_usd}* USD.`;
-
+	str += ` Your stake depends on Amount, forecast accuracy and time of bet. Earlier you place a bet, more stake you get. Winners guess _${config.bet_currency}_ rate _±${config.win_price_range}_ USD.`;
+	str += ` _You can bet multiple times for different rates_. I accept minimal equivalent of _${config.min_value_usd}_ USD for betting and pay rewards greater then _${config.min_reward_usd}_ USD. Your daily limit is _${config.daily_limit_usd}_ USD.`;
 	return str + `
 
 I understand commands:
 
-**/rates** — I will provide market exchange rates for specific coin. F. e., */rates ADM* or */rates USD*.
+**/rates** — I will provide market exchange rates for specific coin. F. e., _/rates ADM_ or _/rates USD_.
 
-**/calc** — I will calculate one coin value in another using market exchange rates. Works like this: */calc 2.05 BTC in USD*.
+**/calc** — I will calculate one coin value in another using market exchange rates. Works like this: _/calc 2.05 BTC in USD_.
 
 **To make a bet**, just send me crypto here in-Chat. Amount is your bet and comment is your _${config.bet_currency}_ forecast rate. F. e., if you want to make a bet of 0.35 ETH on 10 600 USD for _${config.bet_currency}_, send in-Chat payment of 0.35 ETH to me with “10600” comment.
+
+New features soon! I am learning to provide current placed bets, notify about results for rounds, and new type of betting: maximum/ minimum rate during round, ascending or descending trend, will rate exceed special value or not (make a bet if McAfee will eat his dick).
 `;
 }
 
 async function rates(arr) {
 	const coin = (arr[0] || '').toUpperCase().trim();
 	if (!coin || !coin.length){
-		return 'Please specify coin ticker you are interested in. F. e., */rates ADM*.';
+		return 'Please specify coin ticker you are interested in. F. e., _/rates ADM_.';
 	}
 	const currencies = Store.currencies;
 	const res = Object
@@ -82,7 +83,7 @@ async function rates(arr) {
 		.join(', ');
 
 	if (!res.length){
-		return `I can’t get rates for *${coin}*. Made a typo? Try */rates ADM*.`;
+		return `I can’t get rates for _${coin}_. Made a typo? Try _/rates ADM_.`;
 	}
 	return `Market rates:
 	${res}.`;
@@ -90,7 +91,7 @@ async function rates(arr) {
 
 function calc(arr) {
 	if (arr.length !== 4) { // error request
-		return 'Wrong arguments. Command works like this: */calc 2.05 BTC in USD*.';
+		return 'Wrong arguments. Command works like this: _/calc 2.05 BTC in USD_.';
 	}
 
 	const amount = +arr[0];
@@ -98,18 +99,18 @@ function calc(arr) {
 	const outCurrency = arr[3].toUpperCase().trim();
 
 	if (!amount || amount === Infinity){
-		return `It seems amount "*${amount}*" for *${inCurrency}* is not a number. Command works like this: */calc 2.05 BTC in USD*.`;
+		return `It seems amount "_${amount}_" for _${inCurrency}_ is not a number. Command works like this: _/calc 2.05 BTC in USD_.`;
 	}
 	if (!$u.isHasTicker(inCurrency)) {
-		return `I don’t know crypto *${inCurrency}*. Command works like this: */calc 2.05 BTC in USD*.`;
+		return `I don’t know crypto _${inCurrency}_. Command works like this: _/calc 2.05 BTC in USD_.`;
 	}
 	if (!$u.isHasTicker(outCurrency)) {
-		return `I don’t know crypto *${outCurrency}*. Command works like this: */calc 2.05 BTC in USD*.`;
+		return `I don’t know crypto _${outCurrency}_. Command works like this: _/calc 2.05 BTC in USD_.`;
 	}
 	let result = Store.cryptoConvert(inCurrency, outCurrency, amount);
 
 	if (amount <= 0 || result <= 0 || !result) {
-		return `I didn’t understand amount for *${inCurrency}*. Command works like this: */calc 2.05 BTC in USD*.`;
+		return `I didn’t understand amount for _${inCurrency}_. Command works like this: _/calc 2.05 BTC in USD_.`;
 	}
 	if ($u.isFiat(outCurrency)) {
 		result = +result.toFixed(2);

@@ -58,8 +58,8 @@ module.exports = async () => {
 			} = cr;
 
 			let infoString = `Packing round ${cr._id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`;
-            infoString += ` Round created: ${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeIntervalDaysHoursMins(cr.duration)}.`;
-            infoString += ` Round end date: ${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}. Regular (full) round duration: ${$u.timeIntervalDaysHoursMins(cr.fullRoundDuration)}.`;
+            infoString += ` Round created: ${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(cr.duration)}.`;
+            infoString += ` Round end date: ${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}. Regular (full) round duration: ${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}.`;
 			log.info(infoString);
 
 			cr.totalBetsCount = 0;
@@ -100,9 +100,9 @@ module.exports = async () => {
 					infoString = `*Something is wrong*. We are calculating results for round which doesn't end yet. Is _bet_period_cron_pattern_ changed in config? Check everything carefully!`;
 					infoString += `
 
-Round _${cr._id}_ will end on _${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${$u.timeIntervalDaysHoursMins(absTimeSinceEndDate)}_).`;
-					infoString += ` Round created: _${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${$u.timeIntervalDaysHoursMins(cr.duration)}_.`;
-					infoString += ` Regular (full) round duration: _${$u.timeIntervalDaysHoursMins(cr.fullRoundDuration)}_.`;
+Round _${cr._id}_ will end on _${moment(cr.endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
+					infoString += ` Round created: _${moment(cr.createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${$u.timeDiffDaysHoursMins(cr.duration)}_.`;
+					infoString += ` Regular (full) round duration: _${$u.timeDiffDaysHoursMins(cr.fullRoundDuration)}_.`;
 					infoString += ` Actual bet rate now: _${$u.thousandSeparator(tempWinBetNow, false)}_ USD for _${cr.betCurrency}_.`;
 
 					infoString += `
@@ -126,7 +126,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 				}
 
 			} else {// timeSinceEndDate > 0
-				log.info(`Warning. We are calculating results for round ended in the past. Time difference ${$u.timeIntervalDaysHoursMins(absTimeSinceEndDate)}.`);
+				log.info(`Warning. We are calculating results for round ended in the past. Time difference ${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}.`);
 
 				//TODO: check if not more, than 7 days, otherway need to use other method.
 

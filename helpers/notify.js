@@ -40,7 +40,7 @@ module.exports = (message, type) => {
 				'attachments': [{
 					'fallback': message,
 					'color': color,
-					'text': message,
+					'text': message.replace(/\*\*/g, '*'),
 					'mrkdwn_in': ['text']
 				}]
 			}
@@ -49,7 +49,7 @@ module.exports = (message, type) => {
 			request(opts);
 		}
 		if (adamant_notify && adamant_notify.length > 5 && adamant_notify.startsWith('U') && config.passPhrase) {
-			api.send(config.passPhrase, adamant_notify, `${type}| ${message.replace(/\*/g, '**')}`, 'message');
+			api.send(config.passPhrase, adamant_notify, `${type}| ${message.replace(/[^\*]\*[^\*]/g, '**')}`, 'message');
 		}
 	} catch (e) {
 		log.error('Notifer error: ' + e);

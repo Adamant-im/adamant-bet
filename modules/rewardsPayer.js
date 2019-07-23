@@ -63,7 +63,7 @@ module.exports = async () => {
 			log.info(logString);
 			return;
 		} else if (outAmountUsd < minRewardUsd){
-			pay.update({
+			payout.update({
 				error: 17,
 				isFinished: true,
 				triesSendCounter

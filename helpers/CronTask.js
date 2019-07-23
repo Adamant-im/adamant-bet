@@ -53,7 +53,7 @@ module.exports = {
         this.betsJob.start();
 
         setTimeout(()=>{ // Wait for Store initialization
-            notify(`*Bet Bot ${Store.botName} started* for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_ (_${this.getBetDateString('current').nextRoundTime}_).`, 'info');
+            notify(`**Bet Bot ${Store.botName} started** for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_ (_${this.getBetDateString('current').nextRoundTime}_).`, 'info');
         }, 7000);
         
     },
@@ -75,8 +75,8 @@ module.exports = {
             // console.log(newRound);
 
             let infoString = `New round number ${newRound._id} started at ${moment(newRound.createDate).format('YYYY/MM/DD HH:mm Z')}.`;
-            infoString += ` End date: ${moment(newRound.endDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeIntervalDaysHoursMins(newRound.duration)}.`;
-            infoString += ` Regular (full) round duration: ${$u.timeIntervalDaysHoursMins(newRound.fullRoundDuration)}.`;
+            infoString += ` End date: ${moment(newRound.endDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(newRound.duration)}.`;
+            infoString += ` Regular (full) round duration: ${$u.timeDiffDaysHoursMins(newRound.fullRoundDuration)}.`;
             notify(infoString, 'log');
 
 			Store.updateSystem('round', round);
@@ -102,7 +102,7 @@ module.exports = {
             let maxRound = await roundsDb.findOne({_id: Store.round});
 
             if (maxRound && Date.now() > maxRound.endDate) {
-                log.log(`Date now is later, than current round ends. Time difference: ${$u.timeIntervalDaysHoursMins(Date.now() - maxRound.endDate)}. Starting new round.`);
+                log.log(`Date now is later, than current round ends. Time difference: ${$u.timeDiffDaysHoursMins(Date.now() - maxRound.endDate)}. Starting new round.`);
                 this.nextRound();
                 toCreateNewRound = true;
             }

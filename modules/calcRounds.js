@@ -5,7 +5,6 @@ const $u = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
-const calcWinners = require('./calcWinners');
 const ccRate = require('../helpers/getCryptoCompareRate');
 
 module.exports = async () => {
@@ -56,7 +55,7 @@ module.exports = async () => {
 				totalWinnersWeightedPoolUsd
 			} = cr;
 
-			let infoString = `Packing round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`;
+			let infoString = `Packing round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')} (${+Date.now()}).`;
             infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(duration)}.`;
             infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(fullRoundDuration)}.`;
 			log.info(infoString);
@@ -173,7 +172,6 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 					totalBetsCount++;
 					totalSumUsd+= pay.inAmountMessageUsd;
 
-					pay.isCalculated = true;
 					pay.isWinner = (pay.betRateValue < rightMargin) && (pay.betRateValue > leftMargin);
 					pay.betRateDelta = Math.abs(pay.betRateValue-winBet);
 
@@ -229,7 +227,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 
 				// console.log('currentRound', currentRound);
 				let msgNotify = '';
-				msgNotify = `Finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_.`;
+				msgNotify = `Finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (${+Date.now()}).`;
 				msgNotify += ` Win rate: _${$u.thousandSeparator(winBet, false)}_ USD for 1 _${betCurrency}_.`;
 				msgNotify += ` Total bets — _${$u.thousandSeparator(totalBetsCount, false)}_ with _~${$u.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered.`;
 				msgNotify += ` 
@@ -265,9 +263,9 @@ Winners' bets — _${$u.thousandSeparator(totalWinnersCount, false)}_ with _~${$
 					totalWinnersUsdSum,
 					totalWinnersADMSumUsd,
 					totalWinnersETHSumUsd,
-					rewardPoolUsd,
-					rewardPoolADM,
-					rewardPoolETH,
+					// rewardPoolUsd, // these values saved to cr. directly in order to access rewardPoolFieldName
+					// rewardPoolADM,
+					// rewardPoolETH,
 					totalWinnersWeightedPoolUsd
 				}, true);
 
@@ -276,7 +274,6 @@ Winners' bets — _${$u.thousandSeparator(totalWinnersCount, false)}_ with _~${$
 		}
 	});
 
-	calcWinners();
 }
 
 setInterval(() => {

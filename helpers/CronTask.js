@@ -69,7 +69,8 @@ module.exports = {
                 fullRoundDuration: this.getRoundTime(),
 				endDate: +this.betsJob.nextDates(),
                 packDate: null,
-                calcWinnersDate : null
+                calcWinnersDate: null,
+                createPayoutsDate: null
 			});
             await newRound.save();
             // console.log('New round:');

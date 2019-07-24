@@ -109,7 +109,7 @@ module.exports = async () => {
 				notify(msgNotify, notifyType);
 			}
 		} catch (e) {
-			log.error('Error in sendedTxValidator module ', {sendAmount, sendCurrency, sendTxId}, e);
+			log.error('Error in sedBackTxValidator module ', {sendAmount, sendCurrency, sendTxId}, e);
 		}
 	});
 

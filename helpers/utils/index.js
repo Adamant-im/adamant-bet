@@ -82,9 +82,6 @@ module.exports = {
 	isAccepted(coin){
 		return config.accepted_crypto.includes(coin);
 	},
-	isExchanged(coin){
-		return config.exchange_crypto.includes(coin);
-	},
 	isFiat(coin){
 		return ['USD', 'RUB', 'EUR', 'CNY', 'JPY'].includes(coin);
 	},

@@ -63,7 +63,7 @@ I understand commands:
 
 **To make a bet**, just send me crypto here in-Chat. Amount is your bet and comment is your _${config.bet_currency}_ forecast rate. F. e., if you want to make a bet of 0.35 ETH on 10 600 USD for _${config.bet_currency}_, send in-Chat payment of 0.35 ETH to me with “10600” comment.
 
-New features soon! I am learning to provide current placed bets, notify about results for rounds, and new type of betting: maximum/ minimum rate during round, ascending or descending trend, will rate exceed special value or not (make a bet if McAfee will eat his dick).
+New features are coming soon! I am learning to provide current placed bets, notify about results for rounds, and new type of betting: maximum/ minimum rate during round, ascending or descending trend, will rate exceed special value or not (make a bet if McAfee will eat his dick).
 `;
 }
 
@@ -86,7 +86,8 @@ async function rates(arr) {
 		return `I can’t get rates for _${coin}_. Made a typo? Try _/rates ADM_.`;
 	}
 	return `Market rates:
-	${res}.`;
+
+${res}.`;
 }
 
 function calc(arr) {
@@ -116,13 +117,6 @@ function calc(arr) {
 		result = +result.toFixed(2);
 	}
 	return `Market value of ${$u.thousandSeparator(amount)} ${inCurrency} equals **${$u.thousandSeparator(result)} ${outCurrency}**.`;
-}
-
-function balances() {
-	return config.exchange_crypto.reduce((str, c) => {
-		return str + `
-		${$u.thousandSeparator(+Store.user[c].balance.toFixed(8), true)} _${c}_`;
-	}, 'My crypto balances:');
 }
 
 function version(){

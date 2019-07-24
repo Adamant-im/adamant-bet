@@ -10,7 +10,12 @@ function init() {
 	require('./modules/confirmationsCounter');
 	require('./modules/sendBack');
 	require('./modules/sendBackTxValidator');
-	// require('./modules/updateRounds');
+
+    require('./modules/rewardsPayer');
+    require('./modules/calcWinners');
+    require('./modules/createPayouts');
+    require('./modules/rewardTxValidator');
+
 	const Task = require('./helpers/CronTask');
 
 	try {

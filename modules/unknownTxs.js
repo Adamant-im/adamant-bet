@@ -21,10 +21,10 @@ module.exports = async (tx, itx) => {
 				msg = config.welcome_string;
 			}
 			else if (countMsgs === 2) {
-				msg = 'OK. It seems you don’t speak English󠁧󠁢󠁥󠁮. Contact my master and ask him to teach me 🎓 your native language. But note, it will take some time because I am not a genius 🤓.';
+				msg = 'Good in cryto rates forecasts, ha? Make a Blockachin proved bet! ℹ️ Type **/help** for instructions.';
 			}
 			else if (countMsgs === 3) {
-				msg = 'Hm.. Contact _not me_, but my master. No, I don’t know how to reach him. ADAMANT is so much anonymous 🤪.';
+				msg = 'ADAMANT is so much anonymous 🤪 and offers superior features. I am a bet bot and accept bets on crypto rates. Type **/help** to proceed.';
 			}
 			else if (countMsgs === 4) {
 				msg = 'I see.. You just wanna talk 🗣️. I am not the best at talking.';
@@ -62,17 +62,16 @@ function getRnd(collectionNum){
 const collection = [
 	// 0 collection
 	[
-		'Do you wanna beer 🍺? I want to have it aslo, but now is the deal time. May be some ADAMANTs 💰?',
-		'Do you wanna Ethers? Say **/balances** to see if I have some 🤑.',
+		'Do you wanna beer 🍺? I want to have it aslo, but now is the bet time. Do you want a reward 💰?',
 		'Aaaaghr..! 😱 Check out ₿ rates with **/rates BTC** command right now!',
-		'I can tell you my fees by secret. ℹ️ Just say **/help**.',
+		'I can tell you bet rules by secret. ℹ️ Just say **/help**.',
 		'I am just kiddin! 😛',
 		'I’d like to work with you 🈺.',
-		'Ok, let see.. What about 10 ADM for all your Ethers? 🉐',
+		'Ok, let see.. What about a bet of 10 000 ADM for 1 000 000 BTC rate? 🉐',
 		'ADAMANT is cool 😎, isn’t it?',
 		'People do know me. I am decent. 😎 Ask somebody to confirm.',
-		'I am really good 👌 at exchange deal.',
-		'ADAMANT is perfect 💯. Read about it on their Blog.',
+		'I am really good 👌 at bet deal.',
+		'ADAMANT is perfect 💯. Read about it on the Blog.',
 		'I recommend you to read about how ADAMANT is private 🔒 and anonymous.',
 		'To pick up Emoji 😄, press Win + . on Windows, Cmd + Ctrl + Space on Mac, or use keyboard on iPhone and Android.',
 		'Your IP is hidden 🕵️ in ADAMANT, as all connections go through nodes, but not directly as in P2P messengers.',
@@ -82,7 +81,7 @@ const collection = [
 		'ADAMANT is open source, including myself 🤖. Join to make me better! 📶',
 		'Do you know what is ADAMANT 2FA?',
 		'ADAMANT is soooo decentralised! And private! ❤️',
-		'Do you want me to trade more cryptocurrenies 💱? Ask my master!',
+		'Do you want me to accept bet with more cryptocurrenies 💱? Ask my master!',
 		'Recommend ADAMANT to your friends! 🌟',
 		'If I were Satoshi, I’d rebuild Bitcoin ₿ on top of ADAMANT! 😍'
 	],
@@ -114,7 +113,7 @@ const collection = [
 		'Talk less! 🤐',
 		'No, I am not. 🙅‍♂️',
 		'I am not a scammer! 😠',
-		'1 ADM for 10 Ethers! 🤑 Deal! Buterin will understand soon who is the daddy.',
+		'Make a bet! 🤑 Deal! Buterin will understand soon who is the daddy.',
 		'🔫 Гони бабло! 💰 ..sorry for my native.',
 		'Это у вас навар адский. А у меня.. это комиссия за честную работу. 😬',
 		'Ландон из э капитал оф грейт брит.. блять, я перебрал.. 🤣',

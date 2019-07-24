@@ -14,12 +14,14 @@ module.exports = async () => {
 
 	(await rewardsPayoutsDb.find({
 		isFinished: false,
+		isPayoutMade: true,
 		outTxid: {$ne: null}
 	})).forEach(async payout => {
 		let {
 			itxId,
 			senderId,
 			isFinished,
+			isPayoutMade,
 			betRound,
 			senderKvsOutAddress,
 			outCurrency,
@@ -35,7 +37,7 @@ module.exports = async () => {
 		} = payout;
 
 		triesValidateCounter += 1;
-		payout.update({
+		await payout.update({
 			triesValidateCounter
 		});
 
@@ -60,13 +62,14 @@ module.exports = async () => {
 			const txData = (await $u[sendCurrency].getTransactionStatus(sendTxId));
 			if (!txData || !txData.blockNumber){
 				if (triesValidateCounter > 50){
-					payout.update({
+					await payout.update({
 						error: 24,
 						isFinished: true,
 						needHumanCheck: true
 					});
-					notify(`Bet Bot ${Store.botName} unable to verify reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
-					$u.sendAdmMsg(senderId, `I’ve tried to verify transfer of _${outAmount}_ _${outCurrency}_ to you. I've already notified my master.`);
+					notify(`Bet Bot ${Store.botName} unable to verify reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+					$u.sendAdmMsg(senderId, `I’ve tried to make reward transfer of _${outAmount}_ _${outCurrency}_ to you, but I cannot validate transaction. Tx hash: _${sendTxId}_. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.`);
+					msgSendBack = ``;
 					}
 				await payout.save();
 				return;
@@ -78,39 +81,41 @@ module.exports = async () => {
 				return;
 			}
 
-			payout.update({
+			await payout.update({
 				outTxStatus: status,
 				outConfirmations: lastBlockNumber[sendCurrency] - blockNumber
-			});
+			}, true);
 
 			if (status === false) {
-				payout.update({
+				await payout.update({
 					error: 31,
-					outTxid: null
+					outTxid: null,
+					isPayoutMade: false
 				});
 				notify(`Bet Bot ${Store.botName} notifies that reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_ failed. Tx hash: _${sendTxId}_. Will try again. Balance of _${sendCurrency}_ is _${Store.user[sendCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
-				$u.sendAdmMsg(senderId, `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but it seems transaction failed. Tx hash: _${sendTxId}_. I will try again. If I’ve said the same several times already, please contact my master.`);
+				await $u.sendAdmMsg(senderId, `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but it seems transaction failed. Tx hash: _${sendTxId}_. I will try again. If I’ve said the same several times already, please contact my master.`);
 
-			} else if (status && outConfirmations >= config['min_confirmations_' + sendCurrency]){
+			} else if (status && payout.outConfirmations >= config['min_confirmations_' + sendCurrency]){
 
 				notify(`Bet Bot ${Store.botName} successfully payed reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'info');
 				let msgToUser = 'Hey, you are lucky! Waiting for new bets!';
 
 				if (sendCurrency !== 'ADM'){
 					msgToUser = `{"type":"${sendCurrency}_transaction","amount":"${sendAmount}","hash":"${sendTxId}","comments":"${msgToUser}"}`;
-					isFinished = $u.sendAdmMsg(senderId, msgToUser, 'rich');
+					isFinished = await $u.sendAdmMsg(senderId, msgToUser, 'rich');
 				} else {
 					isFinished = true;
 				}
-				payout.update({
+				await payout.update({
 					isFinished
 				});
 
 			}
+
 			await payout.save();
 
 		} catch (e) {
-			log.error('Error in sendedTxValidator module ', {sendAmount, sendCurrency, sendTxId}, e);
+			log.error('Error in rewardTxValidator module ', {sendAmount, sendCurrency, sendTxId}, e);
 		}
 	});
 

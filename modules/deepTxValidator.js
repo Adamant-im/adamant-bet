@@ -125,7 +125,7 @@ module.exports = async (pay, tx) => {
 			$u.sendAdmMsg(tx.senderId, msgSendBack);
 		}
 	} catch (e) {
-		log.error('Error in deepExchangeValidator module: ' + e);
+		log.error('Error in deepTxValidator module: ' + e);
 	}
 };
 

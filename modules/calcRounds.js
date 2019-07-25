@@ -233,7 +233,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 				msgNotify += ` 
 
 Winners' bets — _${$u.thousandSeparator(totalWinnersCount, false)}_ with _~${$u.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
-				msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${$u.thousandSeparator(rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
+				msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${$u.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
 				notify(msgNotify, 'log');
 
 				packDate = Date.now();

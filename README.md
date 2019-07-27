@@ -1,6 +1,14 @@
-ADAMANT Exchange Bot is a software that allows you to launch own exchange, anonymous, instant and convenient. Exchange bots work in ADAMANT Messenger chats directly.
+ADAMANT Bet Bot is an incredible anonymous and Blockchain-proved betting software. 
 
-Read more: [Multiple anonymous crypto exchanges on ADAMANT platform](https://medium.com/adamant-im/multiple-anonymous-crypto-exchanges-on-adamant-platform-11a607be0a9b).
+Different types of betting:
+* Bet on crypto rate within ± range
+* Bet on maximum or minimum crypto rate during period within ± range (coming soon)
+* Bet on ascending or descending crypto rate during period (coming soon)
+* Bet if crypto will exceed special rate up to date (will McAfee eat his dick?) (coming soon)
+
+Bet bots work in ADAMANT Messenger chats directly. Fully automatic, convenient. All bets are Blockchain-proved.
+
+Read more: (coming soon).
 
 
 # Installation
@@ -12,8 +20,8 @@ Read more: [Multiple anonymous crypto exchanges on ADAMANT platform](https://med
 ## Setup
 ```
 su - adamant
-git clone https://github.com/Adamant-im/adamant-exchangebot
-cd ./adamant-exchangebot
+git clone https://github.com/Adamant-im/adamant-bet
+cd ./adamant-bet
 npm i
 ```
 
@@ -23,7 +31,7 @@ nano config.json
 ```
 
 Parameters:
-* `passPhrase` <string> The exchanage bot's secret phrase for concluding transactions. Obligatory. Bot's ADAMANT address will correspond this passPhrase.
+* `passPhrase` <string> The bot's secret phrase for concluding transactions. Obligatory. Bot's ADAMANT address will correspond this passPhrase.
 * `node_ADM` <string, array> List of nodes for API work, obligatorily
 * `node_ETH` <string, array> List of nodes for Ethereum API work, obligatorily
 * `node_LSK` <string, array> List of nodes for Lisk API work, obligatorily
@@ -34,20 +42,21 @@ Parameters:
 * `slack` <string> Token for Slack alerts for the bot’s administrator. No alerts if not set.
 * `adamant_notify` <string> ADM address for the bot’s administrator. Recommended.
 * `known_crypto` <string, array> List of crytpocurrencies bot can work with. If bot will receive or request for crypto not in list, it will not process payment and notify owner. Obligatorily
-* `accepted_crypto` <string, array> List of crytpocurrencies you want to accept for exchange. If bot will receive payment in not-in-list crypto, it will try to return it. Obligatorily
-* `exchange_crypto` <string, array> List of crytpocurrencies you want to send in exchange. If bot will receive request for exchange of not-in-list crypto, it will try to return payment back. Obligatorily
+* `accepted_crypto` <string, array> List of crytpocurrencies you want to accept for bet and pay rewards. If bot will receive payment in not-in-list crypto, it will try to return it. Obligatorily
+
+
+//
 * `exchange_fee` <float> Pecentage you take as fee for bot's service. Default is 10.
-* `exchange_fee_ADM` <float> Pecentage you take as fee, if receiving payment is in specific currency. This value will override general `exchange_fee`
 * `min_value_usd` <float> Minimum payment equivalent in USD accepted. Default is 1.
 * `daily_limit_usd` <float> Daily exchange limit for one user, equivalent in USD. Default is 1000.
 * `min_confirmations` <int> How many confirmations to wait before transaction counts accepted. Default is 3.
 * `min_confirmations_ADM` <int> To override `min_confirmations` for specific cryptocurrency.
-* `welcome_string` <string> How to reply user in-chat, if unknown command received. Default is “Hi! 😊 I'm your exchange bot. I operate instantly and anonymously. ℹ️ Learn more about me on ADAMANT’s blog or type **/help** to see what I can.”
+* `welcome_string` <string> Hi! 😊 I'm anonymous and Blockchain-proved bet bot. I accept bets on currency rates and pay rewards to winners. ℹ️ Learn more on ADAMANT’s blog or type **/help** to start betting."
 
 ## Launching
-You can start the Exchange Bot with the `node app` command, but it is recommended to use the process manager for this purpose.
+You can start the Bet Bot with the `node app` command, but it is recommended to use the process manager for this purpose.
 ```
-pm2 start --name exchangebot app.js 
+pm2 start --name betbot app.js 
 ```
 
 ## Add Exchange Bot to cron:
@@ -57,16 +66,16 @@ crontab -e
 
 Add string:
 ```
-@reboot cd /home/adamant/adamant-exchangebot && pm2 start --name exchangebot app.js
+@reboot cd /home/adamant/adamant-bet && pm2 start --name betbot app.js
 ```
 
 ## Updating
 ```
 su - adamant
-cd ./adamant-exchangebot
-pm2 stop exchangebot
+cd ./adamant-bet
+pm2 stop betbot
 mv config.json config_bup.json && git pull && mv config_bup.json config.json
 npm i
-pm2 start --name exchangebot app.js 
+pm2 start --name betbot app.js 
 ```
 

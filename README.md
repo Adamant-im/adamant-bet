@@ -43,9 +43,6 @@ Parameters:
 * `adamant_notify` <string> ADM address for the bot’s administrator. Recommended.
 * `known_crypto` <string, array> List of crytpocurrencies bot can work with. If bot will receive or request for crypto not in list, it will not process payment and notify owner. Obligatorily
 * `accepted_crypto` <string, array> List of crytpocurrencies you want to accept for bet and pay rewards. If bot will receive payment in not-in-list crypto, it will try to return it. Obligatorily
-
-
-//
 * `exchange_fee` <float> Pecentage you take as fee for bot's service. Default is 10.
 * `min_value_usd` <float> Minimum payment equivalent in USD accepted. Default is 1.
 * `daily_limit_usd` <float> Daily exchange limit for one user, equivalent in USD. Default is 1000.

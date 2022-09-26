@@ -1,5 +1,5 @@
 {
-	/** The bet bot's secret phrase for concluding transactions. 
+	/** The bet bot's secret phrase for concluding transactions.
 		Bot's ADAMANT address will correspond this passPhrase.
     **/
 	"passPhrase": "joy logic job estate kite",
@@ -7,7 +7,7 @@
 	/** List of nodes to fetch transactions.
     	If one become unavailable, pool will choose live one.
     **/
-	
+
 	"node_ADM": [
 		"http://localhost:36666",
 		"https://endless.adamant.im",
@@ -19,71 +19,71 @@
 		"http://80.211.177.181:36666",
 		"https://lake.adamant.im"
 	],
-	
+
     /** List of nodes for Ethereum API work **/
 	"node_ETH": [
 		"https://ethnode1.adamant.im"
-	],	
-	
+	],
+
     /** List of nodes for Lisk API work **/
 	"node_LSK": [
 		"https://lisknode1.adamant.im"
-	],	
+	],
 
     /** List of nodes for Doge API work **/
 	"node_DOGE": [
 		"https://dogenode1.adamant.im"
-	],	
+	],
 
     /** List of nodes for Bitcoin API work **/
 	"node_BTC": [
 		"https://btcnode1.adamant.im"
-	],	
+	],
 
     /** List of nodes for Dash API work **/
 	"node_DASH": [
 		"https://dashnode1.adamant.im"
-	],	
-	
+	],
+
     /** List of ADAMANT InfoServices for catching exchange rates **/
 	"infoservice": [
 		"https://info.adamant.im"
-	],	
+	],
 
-	/** To fetch actual exchange rate, CryptoCompare API key is needed. 
+	/** To fetch actual exchange rate, CryptoCompare API key is needed.
 		This is used only to get actual exchange rate to choose winner.
 		Other cases ADAMANT InfoService is used.
     **/
 	"cryptocompareApiKey": "Put yours CryptoCompare API key",
 
-	/** List of crytpocurrencies you want to accept for bets. 
+	/** List of crytpocurrencies you want to accept for bets.
 		If bot will receive payment in not-in-list crypto, it will try to send back it.
     **/
 	"accepted_crypto": ["ADM", "ETH"],
-	
-	/** List of crytpocurrencies bot can work with. 
+
+	/** List of crytpocurrencies bot can work with.
 		If bot will receive or request for crypto not in list, it will not process payment and notify owner.
     **/
 	"known_crypto": ["ADM", "ETH"],
-	
+
 	/** Cryptocurrency to guess rate.
     **/
 	"bet_currency": "BTC",
 
 	/** Pecentage you take as fee for bot's service. **/
     "bureau_reward_percent": 20,
-    
-	/** Range in USD to decide if user guess right and he wins. 
-		F. e., if user guess is 5000 USD for bicoin and real price will be 4970 USD, 
+
+	/** Range in USD to decide if user guess right and he wins.
+		F. e., if user guess is 5000 USD for bicoin and real price will be 4970 USD,
 		he will win in case if win_price_range = 50. 5000 USD fits range 4970±50 USD.
 	**/
     "win_price_range": 100,
 
 	/** Fixed price in ADm for providing information on current bets and calculating possible rewards. **/
 	"get_current_bets_price_ADM": 5,
-	
+
 	/** In case if less then cool_period_hours left until current round ends,
-		bets will be accepted for next round only, 
+		bets will be accepted for next round only,
 		If you want to change this value in process, clearing databases is recommended.
 	**/
 	"cool_period_hours": 24,
@@ -120,8 +120,8 @@
     /** Slack key for notifications and monitoring (if needed) **/
     "slack": "https://hooks.slack.com/services/",
 
-    /** Port for getting debug info. 
-		Do not set for live bots, use only for debugging. 
+    /** Port for getting debug info.
+		Do not set for live bots, use only for debugging.
 		Allows to get DBs records like http://ip:port/db?tb=incomingTxsDb **/
 	"api": false
 

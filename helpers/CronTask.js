@@ -3,7 +3,7 @@ const cron = require('cron');
 const db = require('../modules/DB');
 const config = require('../modules/configReader');
 const log = require('./log');
-const $u = require('./utils');
+const helpers = require('./utils');
 const Store = require('../modules/Store');
 const notify = require('./notify');
 const calcRounds = require('../modules/calcRounds');
@@ -26,10 +26,10 @@ module.exports = {
     let nextRoundTime; let tillString;
     if (round === 'current') {
       nextRoundTime = this.betsJob.nextDates().format('YYYY/MM/DD HH:mm Z');
-      tillString = $u.timeDiffDaysHoursMins(this.betsJob.nextDates(), Date.now());
+      tillString = helpers.timeDiffDaysHoursMins(this.betsJob.nextDates(), Date.now());
     } else {
       nextRoundTime = this.betsJob.nextDates(2)[1].format('YYYY/MM/DD HH:mm Z');
-      tillString = $u.timeDiffDaysHoursMins(this.betsJob.nextDates(2)[1], Date.now());
+      tillString = helpers.timeDiffDaysHoursMins(this.betsJob.nextDates(2)[1], Date.now());
     }
     return {
       nextRoundTime,
@@ -76,8 +76,8 @@ module.exports = {
       // console.log(newRound);
 
       let infoString = `New round number ${newRound._id} started at ${moment(newRound.createDate).format('YYYY/MM/DD HH:mm Z')}.`;
-      infoString += ` End date: ${moment(newRound.endDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(newRound.duration)}.`;
-      infoString += ` Full round duration: ${$u.timeDiffDaysHoursMins(newRound.fullRoundDuration)}.`;
+      infoString += ` End date: ${moment(newRound.endDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${helpers.timeDiffDaysHoursMins(newRound.duration)}.`;
+      infoString += ` Full round duration: ${helpers.timeDiffDaysHoursMins(newRound.fullRoundDuration)}.`;
       notify(infoString, 'log');
 
       Store.updateSystem('round', round);
@@ -102,7 +102,7 @@ module.exports = {
       const maxRound = await RoundsDb.findOne({_id: Store.round});
 
       if (maxRound && Date.now() > maxRound.endDate) {
-        log.log(`Date now is later, than current round ends. Time difference: ${$u.timeDiffDaysHoursMins(Date.now() - maxRound.endDate)}. Starting new round.`);
+        log.log(`Date now is later, than current round ends. Time difference: ${helpers.timeDiffDaysHoursMins(Date.now() - maxRound.endDate)}. Starting new round.`);
         this.nextRound();
         toCreateNewRound = true;
       }

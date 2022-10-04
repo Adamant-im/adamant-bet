@@ -1,7 +1,7 @@
 const moment = require('moment');
 const db = require('./DB');
 const config = require('./configReader');
-const $u = require('../helpers/utils');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
@@ -51,8 +51,8 @@ module.exports = async () => {
           } = cr;
 
           let infoString = `Packing round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')} (${+Date.now()}).`;
-          infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(duration)}.`;
-          infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(fullRoundDuration)}.`;
+          infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${helpers.timeDiffDaysHoursMins(duration)}.`;
+          infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${helpers.timeDiffDaysHoursMins(fullRoundDuration)}.`;
           log.info(infoString);
 
           totalBetsCount = 0;
@@ -87,10 +87,10 @@ module.exports = async () => {
               infoString = `*Something is wrong*. We are calculating results for round which doesn't end yet. Is _bet_period_cron_pattern_ changed in config? Check everything carefully!`;
               infoString += `
 
-Round _${_id}_ will end on _${moment(endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
-              infoString += ` Round created: _${moment(createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${$u.timeDiffDaysHoursMins(duration)}_.`;
-              infoString += ` Full round duration: _${$u.timeDiffDaysHoursMins(fullRoundDuration)}_.`;
-              infoString += ` Actual bet rate now: _${$u.thousandSeparator(tempWinBetNow, false)}_ USD for _${betCurrency}_.`;
+Round _${_id}_ will end on _${moment(endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${helpers.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
+              infoString += ` Round created: _${moment(createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${helpers.timeDiffDaysHoursMins(duration)}_.`;
+              infoString += ` Full round duration: _${helpers.timeDiffDaysHoursMins(fullRoundDuration)}_.`;
+              infoString += ` Actual bet rate now: _${helpers.thousandSeparator(tempWinBetNow, false)}_ USD for _${betCurrency}_.`;
 
               infoString += `
 
@@ -102,14 +102,14 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 
               notify(infoString, 'error');
               return;
-            } else if ($u.timeDiff(Date.now(), frozenFor24hoursFrom, 'hours') < 24) {
+            } else if (helpers.timeDiff(Date.now(), frozenFor24hoursFrom, 'hours') < 24) {
               return;
             } else { // More, then 24 hours passed. Continue
               infoString = `No action is taken about warning for round _${_id}_. Calculation will be continued and reward payments processed.`;
               notify(infoString, 'warn');
             }
           } else {// timeSinceEndDate > 0
-            log.info(`Warning. We are calculating results for round ended in the past. Time difference ${$u.timeDiffDaysHoursMins(absTimeSinceEndDate)}.`);
+            log.info(`Warning. We are calculating results for round ended in the past. Time difference ${helpers.timeDiffDaysHoursMins(absTimeSinceEndDate)}.`);
 
             // TODO: check if not more, than 7 days, otherway need to use other method.
           }
@@ -194,18 +194,18 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
           const poolsString = [];
           config.accepted_crypto.forEach(async (coin) => {
             const rewardPoolFieldName = 'rewardPool' + coin;
-            poolsString.push(`*${$u.thousandSeparator(+(cr[rewardPoolFieldName].toFixed(8)), false)}* _${coin}_`);
+            poolsString.push(`*${helpers.thousandSeparator(+(cr[rewardPoolFieldName].toFixed(8)), false)}* _${coin}_`);
           });
 
           // console.log('currentRound', currentRound);
           let msgNotify = '';
           msgNotify = `Finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (${+Date.now()}).`;
-          msgNotify += ` Win rate: _${$u.thousandSeparator(winBet, false)}_ USD for 1 _${betCurrency}_.`;
-          msgNotify += ` Total bets — _${$u.thousandSeparator(totalBetsCount, false)}_ with _~${$u.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered.`;
+          msgNotify += ` Win rate: _${helpers.thousandSeparator(winBet, false)}_ USD for 1 _${betCurrency}_.`;
+          msgNotify += ` Total bets — _${helpers.thousandSeparator(totalBetsCount, false)}_ with _~${helpers.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered.`;
           msgNotify += `
 
-Winners' bets — _${$u.thousandSeparator(totalWinnersCount, false)}_ with _~${$u.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
-          msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${$u.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
+Winners' bets — _${helpers.thousandSeparator(totalWinnersCount, false)}_ with _~${helpers.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
+          msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${helpers.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
           notify(msgNotify, 'log');
 
           packDate = Date.now();

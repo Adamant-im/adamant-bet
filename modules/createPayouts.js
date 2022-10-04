@@ -1,9 +1,11 @@
 const moment = require('moment');
 const db = require('./DB');
 const config = require('./configReader');
-const $u = require('../helpers/utils');
+const $u = require('../helpers/cryptos');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
+const api = require('./api');
 
 module.exports = async () => {
   const {RoundsDb} = db;
@@ -27,8 +29,8 @@ module.exports = async () => {
           } = cr;
 
           let infoString = `Creating payouts for round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')} (${+Date.now()}).`;
-          infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(duration)}.`;
-          infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(fullRoundDuration)}.`;
+          infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${helpers.timeDiffDaysHoursMins(duration)}.`;
+          infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${helpers.timeDiffDaysHoursMins(fullRoundDuration)}.`;
           log.info(infoString);
 
           const {PaymentsDb} = db;
@@ -119,7 +121,7 @@ Rewards are: ${rewardsString.join(', ')} (**~${$u.thousandSeparator(payoutValueU
             logString += ` Bet message text: ${betMessageText}.`;
 
             log.info(logString);
-            $u.sendAdmMsg(senderId, msgSendBack);
+            await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
 
             isFinished = true;
             await pay.update({

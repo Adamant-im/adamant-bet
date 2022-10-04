@@ -1,6 +1,7 @@
+const api = require('./api');
 const db = require('./DB');
 const config = require('./configReader');
-const $u = require('../helpers/utils');
+const $u = require('../helpers/cryptos');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
@@ -8,8 +9,8 @@ const notify = require('../helpers/notify');
 module.exports = async () => {
   const {PaymentsDb} = db;
   const lastBlockNumber = {
-    ETH: await $u.ETH.getLastBlockNumber(),
-    ADM: await $u.ADM.getLastBlockNumber(),
+    ETH: await $u.ETH.getLastBlock(),
+    ADM: await $u.ADM.getLastBlock(),
   };
 
   (await PaymentsDb.find({
@@ -57,7 +58,7 @@ module.exports = async () => {
           msgSendBack = `I’ve tried to send back transfer to you, but I cannot validate transaction. Tx hash: _${sendTxId}_. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.`;
 
           notify(msgNotify, notifyType);
-          $u.sendAdmMsg(pay.senderId, msgSendBack);
+          await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack);
         }
         await pay.save();
         return;
@@ -85,7 +86,7 @@ module.exports = async () => {
         msgNotify = `Bet Bot ${Store.botName} sent back of _${inAmountMessage} ${inCurrency}_ failed. Tx hash: _${sendTxId}_. Will try again. Balance of _${sendCurrency}_ is _${Store.user[sendCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
         msgSendBack = `I’ve tried to send transfer back, but it seems transaction failed. Tx hash: _${sendTxId}_. I will try again. If I’ve said the same several times already, please contact my master.`;
 
-        $u.sendAdmMsg(pay.senderId, msgSendBack);
+        await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack);
       } else if (status && pay.outConfirmations >= config['min_confirmations_' + sendCurrency]) {
         notifyType = 'log';
         msgNotify = `Bet Bot ${Store.botName} successfully sent back _${inAmountMessage} ${inCurrency}_ with Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
@@ -93,7 +94,7 @@ module.exports = async () => {
 
         if (sendCurrency !== 'ADM') {
           msgSendBack = `{"type":"${sendCurrency}_transaction","amount":"${sendAmount}","hash":"${sendTxId}","comments":"${msgSendBack}"}`;
-          pay.isFinished = $u.sendAdmMsg(pay.senderId, msgSendBack, 'rich');
+          pay.isFinished = await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack, 'rich');
         } else {
           pay.isFinished = true;
         }

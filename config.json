@@ -26,9 +26,14 @@
 	],
 
     /** List of nodes for Lisk API work **/
-	"node_LSK": [
-		"https://lisknode1.adamant.im"
-	],
+  "node_LSK": [
+    "https://lisknode3.adamant.im",
+    "https://lisknode4.adamant.im"
+  ],
+  "service_LSK": [
+    "https://liskservice3.adamant.im",
+    "https://liskservice4.adamant.im"
+  ],
 
     /** List of nodes for Doge API work **/
 	"node_DOGE": [

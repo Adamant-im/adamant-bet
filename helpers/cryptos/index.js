@@ -8,30 +8,6 @@ const Store = require('../../modules/Store');
 const helpers = require('../utils');
 
 module.exports = {
-  thousandSeparator(num, doBold) {
-    const parts = (num + '').split('.');
-    const integerPart = parts[0];
-    const len = integerPart.length;
-    let output = '';
-    let i = len - 1;
-
-    while (i >= 0) {
-      output = integerPart.charAt(i) + output;
-      if ((len - i) % 3 === 0 && i > 0) {
-        output = ' ' + output;
-      }
-      --i;
-    }
-
-    if (parts.length > 1) {
-      if (doBold) {
-        output = `**${output}**.${parts[1]}`;
-      } else {
-        output = `${output}.${parts[1]}`;
-      }
-    }
-    return output;
-  },
   async getAddressCryptoFromKVS(coin, admAddress) {
     try {
       const kvsRecords = await api.get('states/get', {senderId: admAddress, key: coin.toLowerCase() + ':address', orderBy: 'timestamp:desc'});

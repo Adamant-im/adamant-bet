@@ -1,6 +1,7 @@
 const db = require('./DB');
 const config = require('./configReader');
 const $u = require('../helpers/cryptos');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
@@ -42,7 +43,7 @@ module.exports = async () => {
     const addressString = senderKvsOutAddress === senderId ? senderKvsOutAddress : senderKvsOutAddress + ' (' + senderId + ')';
     let logString = '';
     const minRewardUsd = config.min_reward_usd;
-    const minRewardUsdF = $u.thousandSeparator(minRewardUsd, false);
+    const minRewardUsdF = helpers.thousandSeparator(minRewardUsd, false);
 
     if (!outAmount || outAmount === 0) {
       await payout.update({

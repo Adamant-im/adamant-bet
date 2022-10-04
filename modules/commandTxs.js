@@ -1,5 +1,6 @@
 const api = require('./api');
 const Store = require('../modules/Store');
+const helpers = require('../helpers/utils');
 const $u = require('../helpers/cryptos');
 const notify = require('../helpers/notify');
 const config = require('./configReader');
@@ -160,7 +161,7 @@ function calc(arr) {
   }
   return {
     msgNotify: ``,
-    msgSendBack: `Market value of ${$u.thousandSeparator(amount)} ${inCurrency} equals **${$u.thousandSeparator(result)} ${outCurrency}**.`,
+    msgSendBack: `Market value of ${helpers.thousandSeparator(amount)} ${inCurrency} equals **${helpers.thousandSeparator(result)} ${outCurrency}**.`,
     notifyType: 'log',
   };
 }

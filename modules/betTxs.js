@@ -152,7 +152,7 @@ module.exports = async (itx, tx) => {
       leftTime = Task.getTimeLeft(pay.txTimestamp);
     }
 
-    const betMessageText = `_${$u.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (**${$u.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD**) on _${$u.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${moment(betRoundEndTime).format('YYYY/MM/DD HH:mm Z')} (round _${betRound}_)`;
+    const betMessageText = `_${helpers.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (**${helpers.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD**) on _${helpers.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${moment(betRoundEndTime).format('YYYY/MM/DD HH:mm Z')} (round _${betRound}_)`;
     const earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
     log.info(`Round duration: ${helpers.timeDiffDaysHoursMins(roundTime)}; Time left until next round: ${helpers.timeDiffDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
 

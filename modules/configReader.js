@@ -16,7 +16,15 @@ const fields = {
   },
   node_ETH: {
     type: Array,
-    default: ['https://ethnode1.adamant.im'],
+    isRequired: true,
+  },
+  node_LSK: {
+    type: Array,
+    isRequired: true,
+  },
+  service_LSK: {
+    type: Array,
+    isRequired: true,
   },
   accepted_crypto: {
     type: Array,

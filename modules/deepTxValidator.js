@@ -17,6 +17,7 @@ module.exports = async (pay, tx) => {
   try {
     const senderKvsADMAddress = tx.senderId;
     const senderKvsETHAddress = pay.senderKvsETHAddress || await $u.getAddressCryptoFromKVS('ETH', tx.senderId);
+    const senderKvsLSKAddress = pay.senderKvsLSKAddress || await $u.getAddressCryptoFromKVS('LSK', tx.senderId);
     let senderKvsInAddress;
 
     switch (pay.inCurrency) {
@@ -26,16 +27,26 @@ module.exports = async (pay, tx) => {
       case ('ADM'):
         senderKvsInAddress = senderKvsADMAddress;
         break;
+      case ('LSK'):
+        senderKvsInAddress = senderKvsLSKAddress;
+        break;
     }
 
     pay.update({
       senderKvsInAddress,
       senderKvsADMAddress,
       senderKvsETHAddress,
+      senderKvsLSKAddress,
     });
 
     if (!senderKvsETHAddress) {
       log.error(`Can't get ETH address from KVS. Will try next time.`);
+      await pay.save();
+      return;
+    }
+
+    if (!senderKvsLSKAddress) {
+      log.error(`Can't get LSK address from KVS. Will try next time.`);
       await pay.save();
       return;
     }
@@ -55,12 +66,26 @@ module.exports = async (pay, tx) => {
       }, true);
     }
 
+    if (senderKvsLSKAddress === 'none') {
+      if (!pay.isKVSnotFoundNotified) {
+        notifyType = 'warn';
+        notify(`Bet Bot ${Store.botName} cannot fetch _LSK_ address from KVS. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}. Will try to send back.`, 'warn');
+        const msgSendBack = `I can’t get your _LSK_ address from ADAMANT KVS. It is necessary to send reward in case of win. I'll try to send transfer back to you now. Before next bet, re-login into your ADAMANT account using app that supports _LSK_.`;
+        await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
+      }
+      pay.update({
+        error: 8,
+        needToSendBack: true,
+        isKVSnotFoundNotified: true, // need to verify Tx even if send back
+      }, true);
+    }
+
     let msgSendBack = false;
     let msgNotify = false;
 
     // Validating incoming TX in blockchain of inCurrency
     try {
-      const in_tx = await $u[pay.inCurrency].syncGetTransaction(pay.inTxid, tx);
+      const in_tx = await $u[pay.inCurrency].getTransaction(pay.inTxid, tx);
       if (!in_tx) {
         if (pay.counterTxDeepValidator < 20) {
           await pay.save();
@@ -135,7 +160,7 @@ setInterval(async ()=>{
     transactionIsValid: null,
     isFinished: false,
   })).forEach(async (pay) => {
-    const tx = await api.get('transaction', {id: pay.admTxId});
+    const tx = await api.get('transactions/get', {id: pay.admTxId});
     if (tx.success) {
       module.exports(pay, tx);
     } else {

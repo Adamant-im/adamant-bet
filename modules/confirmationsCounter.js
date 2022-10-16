@@ -13,6 +13,7 @@ module.exports = async () => {
   const lastBlockNumber = {
     ETH: await $u.ETH.getLastBlock(),
     ADM: await $u.ADM.getLastBlock(),
+    LSK: await $u.LSK.getLastBlock(),
   };
 
   (await PaymentsDb.find({

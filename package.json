@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@liskhq/lisk-cryptography": "^3.2.1",
+    "@liskhq/lisk-transactions": "^5.2.2",
     "adamant-api": "^1.5.0",
     "axios": "^0.27.2",
     "cron": "^1.7.1",

@@ -2,6 +2,7 @@ const api = require('../../modules/api');
 const config = require('../../modules/configReader');
 const eth_utils = require('./eth_utils');
 const adm_utils = require('./adm_utils');
+const LskCoin = require('./lsk_utils');
 const log = require('../log');
 const db = require('../../modules/DB');
 const Store = require('../../modules/Store');
@@ -30,7 +31,7 @@ module.exports = {
       senderId: senderId,
       needToSendBack: false,
       inAmountMessageUsd: {$ne: null},
-      date: {$gt: (this.unix() - 24 * 3600 * 1000)}, // last 24h
+      date: {$gt: (helpers.unix() - 24 * 3600 * 1000)}, // last 24h
     })).reduce((r, c) => {
       return r + c.inAmountMessageUsd;
     }, 0);
@@ -55,6 +56,7 @@ module.exports = {
 
   ETH: eth_utils,
   ADM: adm_utils,
+  LSK: new LskCoin('LSK'),
 };
 
 module.exports.updateAllBalances();

@@ -35,18 +35,24 @@ module.exports = async () => {
             totalSumUsd,
             totalADMbetsCount,
             totalETHbetsCount,
+            totalLSKbetsCount,
             totalADMbetsSum,
             totalETHbetsSum,
+            totalLSKbetsSum,
             totalADMbetsSumUsd,
             totalETHbetsSumUsd,
+            totalLSKbetsSumUsd,
             totalWinnersCount,
             totalWinnersADMCount,
             totalWinnersETHCount,
+            totalWinnersLSKCount,
             totalWinnersETHSum,
             totalWinnersADMSum,
+            totalWinnersLSKSum,
             totalWinnersUsdSum,
             totalWinnersADMSumUsd,
             totalWinnersETHSumUsd,
+            totalWinnersLSKSumUsd,
             totalWinnersWeightedPoolUsd,
           } = cr;
 
@@ -59,18 +65,24 @@ module.exports = async () => {
           totalSumUsd = 0;
           totalADMbetsCount = 0;
           totalETHbetsCount = 0;
+          totalLSKbetsCount = 0;
           totalADMbetsSum = 0;
           totalETHbetsSum = 0;
+          totalLSKbetsSum = 0;
           totalADMbetsSumUsd = 0;
           totalETHbetsSumUsd = 0;
+          totalLSKbetsSumUsd = 0;
           totalWinnersCount = 0;
           totalWinnersADMCount = 0;
           totalWinnersETHCount = 0;
+          totalWinnersLSKCount = 0;
           totalWinnersETHSum = 0;
           totalWinnersADMSum = 0;
+          totalWinnersLSKSum = 0;
           totalWinnersUsdSum = 0;
           totalWinnersADMSumUsd = 0;
           totalWinnersETHSumUsd = 0;
+          totalWinnersLSKSumUsd = 0;
           totalWinnersWeightedPoolUsd = 0;
           betCurrency = config.bet_currency;
 
@@ -180,6 +192,16 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
                       totalWinnersADMSumUsd+= pay.inAmountMessageUsd;
                     }
                     break;
+                  case ('LSK'):
+                    totalLSKbetsCount++;
+                    totalLSKbetsSum+= pay.inAmountMessage;
+                    totalLSKbetsSumUsd+= pay.inAmountMessageUsd;
+                    if (pay.isWinner) {
+                      totalWinnersLSKCount++;
+                      totalWinnersLSKSum+= pay.inAmountMessage;
+                      totalWinnersLSKSumUsd+= pay.inAmountMessageUsd;
+                    }
+                    break;
                 }
 
                 await pay.save();
@@ -190,6 +212,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
           cr.rewardPoolUsd = totalSumUsd * (1-config.bureau_reward_percent/100);
           cr.rewardPoolADM = totalADMbetsSum * (1-config.bureau_reward_percent/100);
           cr.rewardPoolETH = totalETHbetsSum * (1-config.bureau_reward_percent/100);
+          cr.rewardPoolLSK = totalLSKbetsSum * (1-config.bureau_reward_percent/100);
 
           const poolsString = [];
           config.accepted_crypto.forEach(async (coin) => {
@@ -223,18 +246,24 @@ Winners' bets — _${helpers.thousandSeparator(totalWinnersCount, false)}_ with 
             totalSumUsd,
             totalADMbetsCount,
             totalETHbetsCount,
+            totalLSKbetsCount,
             totalADMbetsSum,
             totalETHbetsSum,
+            totalLSKbetsSum,
             totalADMbetsSumUsd,
             totalETHbetsSumUsd,
+            totalLSKbetsSumUsd,
             totalWinnersCount,
             totalWinnersADMCount,
             totalWinnersETHCount,
+            totalWinnersLSKCount,
             totalWinnersETHSum,
             totalWinnersADMSum,
+            totalWinnersLSKSum,
             totalWinnersUsdSum,
             totalWinnersADMSumUsd,
             totalWinnersETHSumUsd,
+            totalWinnersLSKSumUsd,
             // rewardPoolUsd, // these values saved to cr. directly in order to access rewardPoolFieldName
             // rewardPoolADM,
             // rewardPoolETH,

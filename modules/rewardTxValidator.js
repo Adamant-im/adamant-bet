@@ -1,6 +1,7 @@
 const db = require('./DB');
 const config = require('./configReader');
 const $u = require('../helpers/cryptos');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
@@ -11,6 +12,7 @@ module.exports = async () => {
   const lastBlockNumber = {
     ETH: await $u.ETH.getLastBlock(),
     ADM: await $u.ADM.getLastBlock(),
+    LSK: await $u.LSK.getLastBlock(),
   };
 
   (await RewardsPayoutsDb.find({
@@ -21,7 +23,6 @@ module.exports = async () => {
     let {
       itxId,
       senderId,
-      isFinished,
       betRound,
       senderKvsOutAddress,
       outCurrency,
@@ -41,7 +42,6 @@ module.exports = async () => {
 
     const sendCurrency = outCurrency;
     const sendTxId = outTxid;
-    const sendAmount = outAmount;
 
     try {
       if (!lastBlockNumber[sendCurrency]) {
@@ -86,22 +86,24 @@ module.exports = async () => {
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else if (status && payout.outConfirmations >= config['min_confirmations_' + sendCurrency]) {
         notify(`Bet Bot ${Store.botName} successfully payed reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'info');
-        let msgToUser = 'Hey, you are lucky! Waiting for new bets!';
+        let msgSendBack = 'Hey, you are lucky! Waiting for new bets!';
 
         if (sendCurrency !== 'ADM') {
-          msgToUser = `{"type":"${sendCurrency}_transaction","amount":"${sendAmount}","hash":"${sendTxId}","comments":"${msgToUser}"}`;
-          isFinished = await api.sendMessageWithLog(config.passPhrase, senderId, msgToUser, 'rich');
+          msgSendBack = `{"type":"${outCurrency.toLowerCase()}_transaction","amount":"${outAmount}","hash":"${outTxid}","comments":"${msgSendBack}"}`;
+          const message = await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack, 'rich');
+          if (message.success) {
+            payout.isFinished = true;
+          } else {
+            log.warn(`Failed to send ADM message on sent Tx ${outTxid} of ${outAmount} ${outCurrency} to ${senderId}. I will try again. ${message?.errorMessage}.`);
+          }
         } else {
-          isFinished = true;
+          payout.isFinished = true;
         }
-        await payout.update({
-          isFinished,
-        });
       }
 
       await payout.save();
     } catch (e) {
-      log.error('Error in rewardTxValidator module ', {sendAmount, sendCurrency, sendTxId}, e);
+      log.error(`Error in ${helpers.getModuleName(module.id)}: ${e}`);
     }
   });
 };

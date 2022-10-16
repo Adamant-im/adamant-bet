@@ -11,9 +11,9 @@ const User = Store.user.ADM;
 
 module.exports = {
   get FEE() {
-    return Store.comissions.ADM;
+    return Store.fees.ADM;
   },
-  syncGetTransaction(hash, tx) {
+  getTransaction(hash, tx) {
     return {
       blockNumber: tx.blockId,
       hash: tx.id,
@@ -34,7 +34,7 @@ module.exports = {
     const tx = await api.get('transactions/get', {id: txId});
     if (tx.success) {
       return {
-        blockNumber: tx.height,
+        blockNumber: tx.data.transaction.height,
         status: true,
       };
     } else {

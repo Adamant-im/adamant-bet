@@ -15,7 +15,7 @@ const privateKey = Buffer.from(
 );
 
 module.exports = {
-  syncGetTransaction(hash) {
+  getTransaction(hash) {
     return new Promise((resolve) => {
       eth.getTransaction(hash, (err, tx) => {
         if (err) {

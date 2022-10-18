@@ -1,9 +1,11 @@
 const log = require('../helpers/log');
-const $u = require('../helpers/utils');
+const $u = require('../helpers/cryptos');
 const notify = require('../helpers/notify');
 const Store = require('./Store');
 const db = require('./DB');
 const api = require('./api');
+const config = require('./configReader');
+const helpers = require('../helpers/utils');
 
 module.exports = async (pay, tx) => {
   pay.counterTxDeepValidator = ++pay.counterTxDeepValidator || 0;
@@ -43,7 +45,8 @@ module.exports = async (pay, tx) => {
       if (!pay.isKVSnotFoundNotified) {
         notifyType = 'warn';
         notify(`Bet Bot ${Store.botName} cannot fetch _ETH_ address from KVS. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}. Will try to send back.`, 'warn');
-        $u.sendAdmMsg(tx.senderId, `I can’t get your _ETH_ address from ADAMANT KVS. It is necessary to send reward in case of win. I'll try to send transfer back to you now. Before next bet, re-login into your ADAMANT account using app that supports _ETH_.`);
+        const msgSendBack = `I can’t get your _ETH_ address from ADAMANT KVS. It is necessary to send reward in case of win. I'll try to send transfer back to you now. Before next bet, re-login into your ADAMANT account using app that supports _ETH_.`;
+        await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
       }
       pay.update({
         error: 8,
@@ -119,7 +122,7 @@ module.exports = async (pay, tx) => {
     await pay.save();
     if (msgSendBack) {
       notify(msgNotify + ` Tx hash: _${pay.inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`, notifyType);
-      $u.sendAdmMsg(tx.senderId, msgSendBack);
+      await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
     }
   } catch (e) {
     log.error('Error in deepTxValidator module: ' + e);
@@ -132,10 +135,11 @@ setInterval(async ()=>{
     transactionIsValid: null,
     isFinished: false,
   })).forEach(async (pay) => {
-    try {
-      const tx = (await api.get('transaction', pay.admTxId)).transaction;
+    const tx = await api.get('transaction', {id: pay.admTxId});
+    if (tx.success) {
       module.exports(pay, tx);
-    } catch (e) {
+    } else {
+      log.warn(`Failed to get transaction of ${helpers.getModuleName(module.id)} module. ${tx.errorMessage}.`);
       module.exports(pay, null);
     }
   });

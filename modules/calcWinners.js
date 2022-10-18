@@ -1,6 +1,6 @@
 const moment = require('moment');
 const db = require('./DB');
-const $u = require('../helpers/utils');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 
@@ -28,8 +28,8 @@ module.exports = async () => {
           } = cr;
 
           let infoString = `Calculating rewards for round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')} (${+Date.now()}).`;
-          infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${$u.timeDiffDaysHoursMins(duration)}.`;
-          infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${$u.timeDiffDaysHoursMins(fullRoundDuration)}.`;
+          infoString += ` Round created: ${moment(createDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${helpers.timeDiffDaysHoursMins(duration)}.`;
+          infoString += ` Round end date: ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Full round duration: ${helpers.timeDiffDaysHoursMins(fullRoundDuration)}.`;
           log.info(infoString);
 
           const {PaymentsDb} = db;

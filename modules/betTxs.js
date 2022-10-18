@@ -1,7 +1,9 @@
+const api = require('./api');
 const moment = require('moment');
 const db = require('./DB');
 const {SAT} = require('../helpers/const');
-const $u = require('../helpers/utils');
+const $u = require('../helpers/cryptos');
+const helpers = require('../helpers/utils');
 const notify = require('../helpers/notify');
 const log = require('../helpers/log');
 const config = require('./configReader');
@@ -152,7 +154,7 @@ module.exports = async (itx, tx) => {
 
     const betMessageText = `_${$u.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (**${$u.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD**) on _${$u.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${moment(betRoundEndTime).format('YYYY/MM/DD HH:mm Z')} (round _${betRound}_)`;
     const earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
-    log.info(`Round duration: ${$u.timeDiffDaysHoursMins(roundTime)}; Time left until next round: ${$u.timeDiffDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
+    log.info(`Round duration: ${helpers.timeDiffDaysHoursMins(roundTime)}; Time left until next round: ${helpers.timeDiffDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
 
     pay.update({
       betMessageText,
@@ -167,7 +169,7 @@ module.exports = async (itx, tx) => {
   await itx.update({isProcessed: true}, true);
 
   notify(msgNotify, notifyType);
-  $u.sendAdmMsg(tx.senderId, msgSendBack);
+  await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
 
   if (!pay.isFinished) {
     deepTxValidator(pay, tx);

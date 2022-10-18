@@ -6,7 +6,7 @@ const log = require('./log');
 module.exports = {
   async getFullURL(url, options) {
     const params = [];
-    for (const key of options) {
+    for (const key of Object.keys(options)) {
       params.push(`${key}=${options[key]}`);
     }
     return url + '?' + params.join('&');

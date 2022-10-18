@@ -1,7 +1,6 @@
 const jsonminify = require('jsonminify');
 const fs = require('fs');
-const log = require('../helpers/log');
-const keys = require('adamant-api/helpers/keys');
+const keys = require('adamant-api/src/helpers/keys');
 const isDev = process.argv.includes('dev');
 let config = {};
 
@@ -83,6 +82,10 @@ const fields = {
     type: String,
     default: 'Hello 😊.',
   },
+  log_level: {
+    type: String,
+    default: 'log',
+  },
 };
 try {
   if (isDev) {
@@ -93,7 +96,7 @@ try {
 
   let keysPair;
   try {
-    keysPair = keys.createKeypairFromPassPhrase(config.passphrase);
+    keysPair = keys.createKeypairFromPassPhrase(config.passPhrase);
   } catch (e) {
     exit('Passphrase is not valid! Error:' + e);
   }
@@ -123,11 +126,11 @@ try {
     }
   });
 } catch (e) {
-  log.error('Error reading config: ' + e);
+  console.error('Error reading config: ' + e);
 }
 
 function exit(msg) {
-  log.error(msg);
+  console.error(msg);
   process.exit(-1);
 }
 config.isDev = isDev;

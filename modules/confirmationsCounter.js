@@ -1,16 +1,18 @@
 const db = require('./DB');
 const config = require('./configReader');
-const $u = require('../helpers/utils');
+const $u = require('../helpers/cryptos');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
+const api = require('./api');
 
 module.exports = async () => {
   const {PaymentsDb} = db;
 
   const lastBlockNumber = {
-    ETH: await $u.ETH.getLastBlockNumber(),
-    ADM: await $u.ADM.getLastBlockNumber(),
+    ETH: await $u.ETH.getLastBlock(),
+    ADM: await $u.ADM.getLastBlock(),
   };
 
   (await PaymentsDb.find({
@@ -68,7 +70,7 @@ module.exports = async () => {
         if (!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
           notifyType = 'info';
           msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
-          msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${$u.timeDiffDaysHoursMins(pay.betRoundEndTime, Date.now())}. Wish you success!`;
+          msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${helpers.timeDiffDaysHoursMins(pay.betRoundEndTime, Date.now())}. Wish you success!`;
         }
       }
 
@@ -76,7 +78,7 @@ module.exports = async () => {
 
       if (msgSendBack) {
         notify(msgNotify, notifyType);
-        $u.sendAdmMsg(pay.senderId, msgSendBack);
+        await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack);
       }
     } catch (e) {
       log.error('Error in ConfirmationsCounter module: ' + e);

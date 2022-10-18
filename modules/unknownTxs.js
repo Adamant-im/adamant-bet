@@ -1,4 +1,5 @@
-const $u = require('../helpers/utils');
+const api = require('./api');
+const helpers = require('../helpers/utils');
 const db = require('./DB');
 const config = require('./configReader');
 
@@ -8,9 +9,9 @@ module.exports = async (tx, itx) => {
       .find({
         sender: tx.senderId,
         type: 'unknown',
-        date: {$gt: ($u.unix() - 24 * 3600 * 1000)}, // last 24h
+        date: {$gt: (helpers.unix() - 24 * 3600 * 1000)}, // last 24h
       }).sort({date: -1}).toArray((err, docs) => {
-        const twoHoursAgo = $u.unix() - 2 * 3600 * 1000;
+        const twoHoursAgo = helpers.unix() - 2 * 3600 * 1000;
         let countMsgs = docs.length;
         if (!docs[1] || twoHoursAgo > docs[1].date) {
           countMsgs = 1;
@@ -38,7 +39,7 @@ module.exports = async (tx, itx) => {
         } else {
           msg = getRnd(5);
         }
-        $u.sendAdmMsg(tx.senderId, msg);
+        api.sendMessageWithLog(config.passPhrase, tx.senderId, msg);
         itx.update({isProcessed: true}, true);
       });
 };

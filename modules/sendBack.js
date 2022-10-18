@@ -1,9 +1,10 @@
 const db = require('./DB');
 const config = require('./configReader');
-const $u = require('../helpers/utils');
+const $u = require('../helpers/cryptos');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
+const api = require('./api');
 
 module.exports = async () => {
   const {PaymentsDb} = db;
@@ -93,7 +94,7 @@ module.exports = async () => {
       notify(msgNotify, notifyType);
     }
     if (msgSendBack) {
-      $u.sendAdmMsg(pay.senderId, msgSendBack);
+      await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack);
     }
   }
 };

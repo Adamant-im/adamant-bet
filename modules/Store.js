@@ -1,6 +1,8 @@
 const db = require('./DB');
+const axios = require('axios');
 const log = require('../helpers/log');
-const keys = require('adamant-api/helpers/keys');
+const keys = require('adamant-api/src/helpers/keys');
+const helpers = require('../helpers/utils');
 const api = require('./api');
 const {version} = require('../package.json');
 const config = require('./configReader');
@@ -41,21 +43,27 @@ module.exports = {
     this[field] = data;
   },
   async updateLastBlock() {
-    try {
-      const lastBlock = (await api.get('uri', 'blocks')).blocks[0];
-      this.updateSystem('lastBlock', lastBlock);
-    } catch (e) {
-      log.error('Error while updating lastBlock: ' + e);
+    const blocks = await api.get('blocks', {limit: 1});
+    if (blocks.success) {
+      this.updateSystem('lastBlock', blocks.data.blocks[0]);
+    } else {
+      log.warn(`Failed to get last block in updateLastBlock() of ${helpers.getModuleName(module.id)} module. ${blocks.errorMessage}.`);
     }
   },
   async updateCurrencies() {
+    const url = config.infoservice + '/get';
     try {
-      const data = await api.syncGet(config.infoservice + '/get', true);
-      if (data.success) {
-        this.currencies = data.result;
+      const res = await axios.get(url, {});
+      if (res) {
+        const data = res?.data?.result;
+        if (data) {
+          this.currencies = data;
+        } else {
+          log.warn(`Error in updateCurrencies() of ${helpers.getModuleName(module.id)} module: Request to ${url} returned empty result.`);
+        }
       }
-    } catch (e) {
-      log.error('Error while updating currencies: ' + e);
+    } catch (error) {
+      log.warn(`Error in updateCurrencies() of ${helpers.getModuleName(module.id)} module: Request to ${url} failed with ${error?.response?.status} status code, ${error.toString()}${error?.response?.data ? '. Message: ' + error.response.data.toString().trim() : ''}.`);
     }
   },
   getPrice(from, to) {

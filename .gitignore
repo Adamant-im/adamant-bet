@@ -3,3 +3,5 @@ logs/
 package-lock.json
 tests.js
 config.json.dev
+.idea
+.editorconfig

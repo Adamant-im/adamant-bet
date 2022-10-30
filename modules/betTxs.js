@@ -129,10 +129,7 @@ module.exports = async (itx, tx) => {
 
     if (!pay.isFinished && !pay.needToSendBack) {
       notifyType = 'log';
-
       const isCoolPeriod = Task.ifCoolPeriod(pay.txTimestamp);
-      log.info(`Is bet placed in cool period for current round number ${Store.round}?: ${isCoolPeriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
-
       const roundTime = Task.getRoundTime();
       let leftTime;
 
@@ -153,7 +150,15 @@ module.exports = async (itx, tx) => {
 
       const betMessageText = `_${helpers.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (**${helpers.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD**) on _${helpers.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${moment(betRoundEndTime).format('YYYY/MM/DD HH:mm Z')} (round _${betRound}_)`;
       const earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
-      log.info(`Round duration: ${helpers.timeDiffDaysHoursMins(roundTime)}; Time left until next round: ${helpers.timeDiffDaysHoursMins(leftTime)}; early bet koef: ${earlyBetKoef.toFixed(2)}.`);
+
+      let roundInfo = `Current round ${Store.round} duration: ${helpers.timeDiffDaysHoursMins(roundTime)}, it ends on ${Task.getBetDateString('current').nextRoundTime}.`;
+      roundInfo += ` Cool period is ${config.cool_period_hours} hours.`;
+      roundInfo += ` Time left until next round: ${helpers.timeDiffDaysHoursMins(leftTime)}.`;
+      if (isCoolPeriod) {
+        roundInfo += ` **The bet is placed in cool period for current round**.`;
+      }
+      roundInfo += ` Early bet koef: ${earlyBetKoef.toFixed(2)}.`;
+      log.log(roundInfo);
 
       pay.update({
         betMessageText,

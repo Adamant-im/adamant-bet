@@ -103,7 +103,7 @@ module.exports = {
     }
   },
 
-  cryptoConvert(from, to, amount, doNotAccountFees) {
+  cryptoConvert(from, to, amount, doNotAccountFees = true) {
     try {
       let price = this.getPrice(from, to);
       if (!doNotAccountFees) {

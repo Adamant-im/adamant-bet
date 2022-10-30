@@ -49,7 +49,13 @@ function init() {
       });
     }
   } catch (e) {
-    notify(`${config.notifyName} is not started. Error: ${e}`, 'error');
-    process.exit();
+    let message = `${config.notifyName} is not started. Error: ${e}`;
+    if (e.message.includes('findOne')) {
+      message = `${config.notifyName} is not started. Unable to connect to MongoDB. Check if Mongo server is running and available.`;
+    }
+    notify(message, 'error');
+    setTimeout(() => {
+      process.exit(1);
+    }, 2000);
   }
 }

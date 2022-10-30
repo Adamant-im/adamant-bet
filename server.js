@@ -6,6 +6,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const config = require('./modules/configReader');
+const log = require('./helpers/log');
 const port = config.api;
 const db = require('./modules/DB');
 
@@ -38,5 +39,5 @@ if (port) {
     });
   });
 
-  app.listen(port, () => console.info('Server listening on port ' + port + ' http://localhost:' + port + '/db?tb=systemDb'));
+  app.listen(port, () => log.info(`${config.notifyName} debug server is listening on http://localhost:${port}. F. e., http://localhost:${port}/db?tb=systemDb.`));
 }

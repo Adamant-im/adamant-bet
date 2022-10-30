@@ -116,6 +116,9 @@
     /** To override min_confirmations for specific cryptocurrency. **/
     "min_confirmations_ADM": 2,
 
+    /** Bot's name for notifications **/
+    "bot_name": "Lovely Bet Bot",
+
     /** How to reply user in-chat, if first unknown command received. **/
     "welcome_string": "Hi! 😊 I'm anonymous and Blockchain-proved bet bot. I accept bets on currency rates and pay rewards to winners. ℹ️ Learn more on ADAMANT’s blog or type **/help** to start betting.",
 

@@ -95,6 +95,7 @@ const fields = {
     default: 'log',
   },
 };
+
 try {
   let configFile;
   if (isDev || process.env.JEST_WORKER_ID) {
@@ -110,16 +111,25 @@ try {
   }
   config = JSON.parse(jsonminify(fs.readFileSync(configFile, 'utf-8')));
 
-  let keysPair;
-  try {
-    keysPair = keys.createKeypairFromPassPhrase(config.passPhrase);
-  } catch (e) {
-    exit('Passphrase is not valid! Error:' + e);
+  if (!config.node_ADM) {
+    exit(`Bot's config is wrong. ADM nodes are not set. Cannot start the Bot.`);
   }
-  const address = keys.createAddressFromPublicKey(keysPair.publicKey);
-  config.publicKey = keysPair.publicKey;
-  config.address = address;
+  if (!config.passPhrase || config.passPhrase.length < 35) {
+    exit(`Bot's config is wrong. Set an ADAMANT passPhrase to manage the Bot.`);
+  }
 
+  let keyPair;
+  try {
+    keyPair = keys.createKeypairFromPassPhrase(config.passPhrase);
+  } catch (e) {
+    exit(`Bot's config is wrong. Invalid passPhrase. Error: ${e}. Cannot start the Bot.`);
+  }
+  const address = keys.createAddressFromPublicKey(keyPair.publicKey);
+  config.keyPair = keyPair;
+  config.publicKey = keyPair.publicKey.toString('hex');
+  config.address = address;
+  config.notifyName = `${config.bot_name} (${config.address})`;
+  config.version = require('../package.json').version;
 
   ['min_confirmations'].forEach((param) => {
     config.known_crypto.forEach((coin) => {
@@ -141,6 +151,8 @@ try {
       exit(`Bet Bot ${address} config is wrong. Field type _${f}_ is not valid, expected type is _${fields[f].type.name}_. Cannot start Bot.`);
     }
   });
+
+  console.info(`The bot ${address} successfully read the config-file '${configFile}'${isDev ? ' (dev)' : ''}.`);
 } catch (e) {
   console.error('Error reading config: ' + e);
 }

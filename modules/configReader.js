@@ -34,6 +34,14 @@ const fields = {
     type: Array,
     isRequired: true,
   },
+  socket: {
+    type: Boolean,
+    default: true,
+  },
+  ws_type: {
+    type: String,
+    isRequired: true,
+  },
   infoservice: {
     type: Array,
     default: ['https://info.adamant.im'],

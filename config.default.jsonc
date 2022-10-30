@@ -22,6 +22,12 @@
 		"https://lake.adamant.im"
 	],
 
+  /** Socket connection is recommended for better user experience **/
+  "socket": true,
+
+  /** Choose socket connection, "ws" or "wss" depending on your server **/
+  "ws_type": "ws",
+
   /** List of nodes for the Ethereum API **/
 	"node_ETH": [
 		"https://ethnode1.adamant.im"

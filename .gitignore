@@ -1,7 +1,8 @@
 node_modules/
 logs/
-package-lock.json
 tests.js
 config.json.dev
+config.test.jsonc
 .idea
 .editorconfig
+.vscode

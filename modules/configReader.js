@@ -96,11 +96,19 @@ const fields = {
   },
 };
 try {
-  if (isDev) {
-    config = JSON.parse(jsonminify(fs.readFileSync('./config.test', 'utf-8')));
+  let configFile;
+  if (isDev || process.env.JEST_WORKER_ID) {
+    configFile = './config.test.jsonc';
   } else {
-    config = JSON.parse(jsonminify(fs.readFileSync('./config.json', 'utf-8')));
+    if (fs.existsSync('./config.jsonc')) {
+      configFile = './config.jsonc';
+    } else if (fs.existsSync('./config.json')) {
+      configFile = './config.json';
+    } else {
+      configFile = './config.default.json';
+    }
   }
+  config = JSON.parse(jsonminify(fs.readFileSync(configFile, 'utf-8')));
 
   let keysPair;
   try {

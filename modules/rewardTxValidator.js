@@ -56,7 +56,7 @@ module.exports = async () => {
             isFinished: true,
             needHumanCheck: true,
           });
-          notify(`Bet Bot ${Store.botName} unable to verify reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+          notify(`config.notifyName unable to verify reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
           const msgSendBack = `I’ve tried to make reward transfer of _${outAmount}_ _${outCurrency}_ to you, but I cannot validate transaction. Tx hash: _${sendTxId}_. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.`;
           await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
         }
@@ -81,11 +81,11 @@ module.exports = async () => {
           outTxid: null,
           isPayoutMade: false,
         });
-        notify(`Bet Bot ${Store.botName} notifies that reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_ failed. Tx hash: _${sendTxId}_. Will try again. Balance of _${sendCurrency}_ is _${Store.user[sendCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+        notify(`config.notifyName notifies that reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_ failed. Tx hash: _${sendTxId}_. Will try again. Balance of _${sendCurrency}_ is _${Store.user[sendCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
         const msgSendBack = `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but it seems transaction failed. Tx hash: _${sendTxId}_. I will try again. If I’ve said the same several times already, please contact my master.`;
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else if (status && payout.outConfirmations >= config['min_confirmations_' + sendCurrency]) {
-        notify(`Bet Bot ${Store.botName} successfully payed reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'info');
+        notify(`config.notifyName successfully payed reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'info');
         let msgSendBack = 'Hey, you are lucky! Waiting for new bets!';
 
         if (sendCurrency !== 'ADM') {

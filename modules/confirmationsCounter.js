@@ -62,7 +62,7 @@ module.exports = async () => {
           isFinished: true,
         });
         notifyType = 'error';
-        msgNotify = `Bet Bot ${Store.botName} notifies transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is Failed. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
+        msgNotify = `config.notifyName notifies transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is Failed. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
         msgSendBack = `Transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${inTxid}_ is Failed and will not be processed. Check _${pay.inCurrency}_ blockchain explorer and try again. If you think it’s a mistake, contact my master.`;
       } else if (pay.inTxStatus && pay.inConfirmations >= config['min_confirmations_' + inCurrency]) { // Tx verified
         pay.update({
@@ -70,7 +70,7 @@ module.exports = async () => {
         });
         if (!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
           notifyType = 'info';
-          msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
+          msgNotify = `config.notifyName successfully validated bet of ${pay.betMessageText}.`;
           msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${helpers.timeDiffDaysHoursMins(pay.betRoundEndTime, Date.now())}. Wish you success!`;
         }
       }

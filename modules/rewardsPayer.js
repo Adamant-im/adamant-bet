@@ -60,7 +60,7 @@ module.exports = async () => {
         isFinished: true,
         triesSendCounter,
       }, true);
-      notify(`Bet Bot ${Store.botName} won’t send reward of _${outAmountF} ${outCurrency}_ to _${addressString}_ in round _${betRound}_ because it is less than minimum amount of _${minRewardUsdF}_ USD. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, log);
+      notify(`config.notifyName won’t send reward of _${outAmountF} ${outCurrency}_ to _${addressString}_ in round _${betRound}_ because it is less than minimum amount of _${minRewardUsdF}_ USD. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, log);
       const msgSendBack = `I wouldn’t send you reward payment of _${outAmountF} ${outCurrency}_ because it is less than minimum amount of _${minRewardUsdF}_ USD.`;
       await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       return;
@@ -71,11 +71,11 @@ module.exports = async () => {
           isPaused: toBePaused,
           triesSendCounter,
         }, true);
-        notify(`Bet Bot ${Store.botName} notifies about insufficient balance for reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+        notify(`config.notifyName notifies about insufficient balance for reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
         const msgSendBack = `I can’t send you reward payment of _${outAmount}_ _${outCurrency}_ because of insufficient funds. I've already notified my master.`;
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else {
-        log.warn(`Bet Bot ${Store.botName} notifies about insufficient balance for reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
+        log.warn(`config.notifyName notifies about insufficient balance for reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
       }
       await payout.update({
         triesSendCounter,
@@ -106,11 +106,11 @@ module.exports = async () => {
           isPaused: toBePaused,
           triesSendCounter,
         }, true);
-        notify(`Bet Bot ${Store.botName} unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+        notify(`config.notifyName unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
         const msgSendBack = `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but something went wrong. I've already notified my master.`;
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else {
-        log.warn(`Bet Bot ${Store.botName} unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
+        log.warn(`config.notifyName unable to make reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
       }
     }
 

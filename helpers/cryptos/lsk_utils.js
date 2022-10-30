@@ -69,13 +69,20 @@ module.exports = class LskCoin extends LskBaseCoin {
         return this.fromBeddows(cached);
       }
       const result = await this._get(`${lskNode}/api/accounts/${this.account.addressHex}`, {});
+      if (result?.errors?.[0].message?.includes('was not found')) {
+        result.data = {
+          token: {
+            balance: 0,
+          },
+        };
+      }
       if (result && result.data && (result.data.token.balance !== undefined)) {
         const {balance} = result.data.token;
         this.cache.cacheData('balance', balance);
         Store.user.LSK.balance = this.fromBeddows(balance);
         return this.fromBeddows(balance);
       } else {
-        const balanceErrorMessage = result && result.errorMessage ? ' ' + result.errorMessage : '';
+        const balanceErrorMessage = result?.errors?.[0].message ? ' ' + result.errors[0].message : '';
         log.warn(`Failed to get balance in getBalance() for ${this.token} of ${helpers.getModuleName(module.id)} module; returning outdated cached balance.${balanceErrorMessage}`);
         return this.fromBeddows(this.cache.getData('balance', false));
       }

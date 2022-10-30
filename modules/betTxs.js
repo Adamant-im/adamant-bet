@@ -79,7 +79,7 @@ module.exports = async (itx, tx) => {
       pay.isFinished = true;
       pay.error = 1;
       notifyType = 'error';
-      msgNotify = `config.notifyName thinks transaction of _${inAmountMessage}_ _${inCurrency}_ is duplicated. Tx hash: _${inTxid}_. Will ignore this transaction. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+      msgNotify = `${config.notifyName} thinks transaction of _${inAmountMessage}_ _${inCurrency}_ is duplicated. Tx hash: _${inTxid}_. Will ignore this transaction. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
       msgSendBack = `I think transaction of _${inAmountMessage}_ _${inCurrency}_ with Tx ID _${inTxid}_ is duplicated, it will not be processed. If you think it’s a mistake, contact my master.`;
     } else if (!$u.isKnown(inCurrency)) {
       pay.error = 2;
@@ -93,14 +93,14 @@ module.exports = async (itx, tx) => {
       pay.needToSendBack = true;
       notifyType = 'warn';
 
-      msgNotify = `config.notifyName notifies about incoming transfer of unaccepted crypto: _${inAmountMessage}_ _${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+      msgNotify = `${config.notifyName} notifies about incoming transfer of unaccepted crypto: _${inAmountMessage}_ _${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
       msgSendBack = `Crypto _${inCurrency}_ is not accepted. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
     } else if (!betRate) {
       pay.error = 93;
       pay.needToSendBack = true;
       notifyType = 'warn';
 
-      msgNotify = `config.notifyName cannot recognize user bet. Got _${betRate}_ from string _${betString}_. Will try to send payment of _${inAmountMessage}_ _${inCurrency}_ back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+      msgNotify = `${config.notifyName} cannot recognize user bet. Got _${betRate}_ from string _${betString}_. Will try to send payment of _${inAmountMessage}_ _${inCurrency}_ back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
       msgSendBack = `I can't recognize bet from your comment _${betString}_. Please put a number. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
     } else {
       // need some calculate
@@ -116,7 +116,7 @@ module.exports = async (itx, tx) => {
         });
         notifyType = 'warn';
 
-        msgNotify = `config.notifyName notifies that user _${tx.senderId}_ exceeds daily limit of _${config.daily_limit_usd}_ USD with transfer of _${inAmountMessage} ${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+        msgNotify = `${config.notifyName} notifies that user _${tx.senderId}_ exceeds daily limit of _${config.daily_limit_usd}_ USD with transfer of _${inAmountMessage} ${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
         msgSendBack = `You have exceeded maximum daily volume of _${config.daily_limit_usd}_ USD. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
       } else if (!pay.inAmountMessageUsd || pay.inAmountMessageUsd < min_value_usd) {
         pay.update({
@@ -124,7 +124,7 @@ module.exports = async (itx, tx) => {
           needToSendBack: true,
         });
         notifyType = 'warn';
-        msgNotify = `config.notifyName notifies about incoming transaction below minimum value of _${min_value_usd}_ USD: _${inAmountMessage}_ _${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+        msgNotify = `${config.notifyName} notifies about incoming transaction below minimum value of _${min_value_usd}_ USD: _${inAmountMessage}_ _${inCurrency}_. Will try to send payment back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
         msgSendBack = `I don’t accept bets below minimum value of _${min_value_usd}_ USD. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
       }
     }
@@ -163,7 +163,7 @@ module.exports = async (itx, tx) => {
         betRound,
       });
 
-      msgNotify = `config.notifyName notifies about incoming bet of ${betMessageText}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+      msgNotify = `${config.notifyName} notifies about incoming bet of ${betMessageText}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
       msgSendBack = `I understood your bet of ${betMessageText}.${periodString} Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
     }
 

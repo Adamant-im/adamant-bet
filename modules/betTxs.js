@@ -40,7 +40,7 @@ module.exports = async (itx, tx) => {
     const betRate = Number(betString);
     inCurrency = String(inCurrency).toUpperCase().trim();
 
-    log.info(`Got new bet: ${inAmountMessage} ${inCurrency} for ${betRate} on ${config.bet_currency}.`);
+    log.info(`Got a new bet: ${inAmountMessage} ${inCurrency} on ${config.bet_currency} at ${betRate} USD.`);
 
     const pay = new PaymentsDb({
       _id: tx.id,
@@ -103,12 +103,10 @@ module.exports = async (itx, tx) => {
       msgNotify = `${config.notifyName} cannot recognize user bet. Got _${betRate}_ from string _${betString}_. Will try to send payment of _${inAmountMessage}_ _${inCurrency}_ back. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
       msgSendBack = `I can't recognize bet from your comment _${betString}_. Please put a number. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
     } else {
-      // need some calculate
+      // Calculate transaction value
       pay.inAmountMessageUsd = Store.cryptoConvert(inCurrency, 'USD', inAmountMessage);
-      log.info(`Transaction value is ${pay.inAmountMessageUsd} USD.`);
-
       const userDailyValue = await $u.userDailyValue(tx.senderId);
-      log.info(`User's ${tx.senderId} daily volume is ${userDailyValue} USD.`);
+      log.log(`User's ${tx.senderId} daily volume is ${userDailyValue} USD. Transaction value is ${pay.inAmountMessageUsd} USD.`);
       if (userDailyValue + pay.inAmountMessageUsd >= config.daily_limit_usd) {
         pay.update({
           error: 23,
@@ -129,11 +127,11 @@ module.exports = async (itx, tx) => {
       }
     }
 
-    if (!pay.isFinished && !pay.needToSendBack) {// if Ok checks tx
+    if (!pay.isFinished && !pay.needToSendBack) {
       notifyType = 'log';
 
-      const isCoolPreriod = Task.ifCoolPeriod(pay.txTimestamp);
-      log.info(`Is bet placed in cool period for current round number ${Store.round}?: ${isCoolPreriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
+      const isCoolPeriod = Task.ifCoolPeriod(pay.txTimestamp);
+      log.info(`Is bet placed in cool period for current round number ${Store.round}?: ${isCoolPeriod}. Round ends on ${Task.getBetDateString('current').nextRoundTime}, cool period is ${config.cool_period_hours} hours.`);
 
       const roundTime = Task.getRoundTime();
       let leftTime;
@@ -141,7 +139,7 @@ module.exports = async (itx, tx) => {
       let periodString = ``;
       let betRound;
       let betRoundEndTime;
-      if (isCoolPreriod) {
+      if (isCoolPeriod) {
         betRound = Store.round + 1;
         betRoundEndTime = +Task.betsJob.nextDates(2)[1];
         periodString = ` **Note: bet is accepted not for current, but for next round; cool period goes now.**`;

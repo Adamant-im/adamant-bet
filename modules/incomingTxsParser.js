@@ -25,7 +25,7 @@ module.exports = async (tx) => {
     return;
   }
 
-  log.log(`Received incoming transaction ${tx.id} from ${tx.senderId}.`);
+  log.log(`Processing new incoming transaction ${tx.id} from ${tx.senderId} via ${tx.height ? 'REST' : 'socket'}…`);
 
   let msg = '';
   const chat = tx.asset.chat;

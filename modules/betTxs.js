@@ -107,9 +107,9 @@ module.exports = async (itx, tx) => {
       pay.inAmountMessageUsd = Store.cryptoConvert(inCurrency, 'USD', inAmountMessage);
       log.info(`Transaction value is ${pay.inAmountMessageUsd} USD.`);
 
-      const userDailiValue = await $u.userDailiValue(tx.senderId);
-      log.info(`User's ${tx.senderId} daily volume is ${userDailiValue} USD.`);
-      if (userDailiValue + pay.inAmountMessageUsd >= config.daily_limit_usd) {
+      const userDailyValue = await $u.userDailyValue(tx.senderId);
+      log.info(`User's ${tx.senderId} daily volume is ${userDailyValue} USD.`);
+      if (userDailyValue + pay.inAmountMessageUsd >= config.daily_limit_usd) {
         pay.update({
           error: 23,
           needToSendBack: true,

@@ -16,8 +16,8 @@ module.exports = async (pay, tx) => {
   // Fetching addresses from ADAMANT KVS
   try {
     const senderKvsADMAddress = tx.senderId;
-    const senderKvsETHAddress = pay.senderKvsETHAddress || await $u.getAddressCryptoFromKVS('ETH', tx.senderId);
-    const senderKvsLSKAddress = pay.senderKvsLSKAddress || await $u.getAddressCryptoFromKVS('LSK', tx.senderId);
+    const senderKvsETHAddress = pay.senderKvsETHAddress || await $u.getAddressCryptoFromAdmAddressADM('ETH', tx.senderId);
+    const senderKvsLSKAddress = pay.senderKvsLSKAddress || await $u.getAddressCryptoFromAdmAddressADM('LSK', tx.senderId);
     let senderKvsInAddress;
 
     switch (pay.inCurrency) {

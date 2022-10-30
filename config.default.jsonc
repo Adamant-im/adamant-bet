@@ -1,16 +1,18 @@
 {
-	/** The bet bot's secret phrase for concluding transactions.
+	/**
+		The bot's secret phrase for interaction.
 		Bot's ADAMANT address will correspond this passPhrase.
-    **/
+  **/
 	"passPhrase": "joy logic job estate kite",
 
-	/** List of nodes to fetch transactions.
-    	If one become unavailable, pool will choose live one.
-    **/
+	/** 
+		List of nodes to fetch transactions.
+    If one become unavailable, pool will choose live one.
+  **/
 
 	"node_ADM": [
-		"http://localhost:36666",
 		"https://endless.adamant.im",
+		"http://localhost:36666",
 		"https://clown.adamant.im",
 		"https://bid.adamant.im",
 		"https://unusual.adamant.im",
@@ -20,12 +22,12 @@
 		"https://lake.adamant.im"
 	],
 
-    /** List of nodes for Ethereum API work **/
+  /** List of nodes for the Ethereum API **/
 	"node_ETH": [
 		"https://ethnode1.adamant.im"
 	],
 
-    /** List of nodes for Lisk API work **/
+  /** List of nodes for the Lisk API **/
   "node_LSK": [
     "https://lisknode3.adamant.im",
     "https://lisknode4.adamant.im"
@@ -35,105 +37,102 @@
     "https://liskservice4.adamant.im"
   ],
 
-    /** List of nodes for Doge API work **/
-	"node_DOGE": [
-		"https://dogenode1.adamant.im"
-	],
-
-    /** List of nodes for Bitcoin API work **/
-	"node_BTC": [
-		"https://btcnode1.adamant.im"
-	],
-
-    /** List of nodes for Dash API work **/
-	"node_DASH": [
-		"https://dashnode1.adamant.im"
-	],
-
-    /** List of ADAMANT InfoServices for catching exchange rates **/
+  /** List of ADAMANT InfoServices for catching exchange rates **/
 	"infoservice": [
 		"https://info.adamant.im"
 	],
 
-	/** To fetch actual exchange rate, CryptoCompare API key is needed.
-		This is used only to get actual exchange rate to choose winner.
-		Other cases ADAMANT InfoService is used.
-    **/
+	/**
+		To fetch actual exchange rate, add CryptoCompare API key.
+		This is used to get actual exchange rate to choose winner.
+		In other cases ADAMANT InfoService is used.
+  **/
 	"cryptocompareApiKey": "Put yours CryptoCompare API key",
 
-	/** List of crytpocurrencies you want to accept for bets.
-		If bot will receive payment in not-in-list crypto, it will try to send back it.
-    **/
-	"accepted_crypto": ["ADM", "ETH"],
+	/**
+		List of cryptocurrencies you want to accept for bets.
+		If bot will receive payment in not-in-list crypto, it will try to send it back.
+  **/
+	"accepted_crypto": ["ADM", "ETH", "LSK"],
 
-	/** List of crytpocurrencies bot can work with.
-		If bot will receive or request for crypto not in list, it will not process payment and notify owner.
-    **/
-	"known_crypto": ["ADM", "ETH"],
+	/** 
+		List of cryptocurrencies the bot can work with.
+		If bot will receive or request for crypto not in list, it will not process a payment and notify owner.
+  **/
+	"known_crypto": ["ADM", "ETH", "LSK"],
 
-	/** Cryptocurrency to guess rate.
-    **/
+	/** Cryptocurrency rate to guess **/
 	"bet_currency": "BTC",
 
-	/** Pecentage you take as fee for bot's service. **/
-    "bureau_reward_percent": 20,
+	/** Percentage the bot takes as a fee **/
+  "bureau_reward_percent": 20,
 
-	/** Range in USD to decide if user guess right and he wins.
-		F. e., if user guess is 5000 USD for bicoin and real price will be 4970 USD,
-		he will win in case if win_price_range = 50. 5000 USD fits range 4970±50 USD.
+	/** 
+		Range in USD to decide if user guessed right and he wins.
+		F. e., if user guess is 5000 USD for bitcoin and real price was 4970 USD,
+		They'll win in case of '50' value as 5000 USD fits range 4970±50 USD.
 	**/
-    "win_price_range": 100,
+  "win_price_range": 100,
 
-	/** Fixed price in ADm for providing information on current bets and calculating possible rewards. **/
+	/**
+		Fixed fee in ADM for providing information on current bets and calculating possible rewards.
+		Not used currently.
+	**/
 	"get_current_bets_price_ADM": 5,
 
-	/** In case if less then cool_period_hours left until current round ends,
-		bets will be accepted for next round only,
+	/**
+		In case if less then cool_period_hours left until current round ends,
+		Bets will be accepted for next round only.
 		If you want to change this value in process, clearing databases is recommended.
 	**/
 	"cool_period_hours": 24,
 
-	/** How often winners will be choosen and new game start.
+	/**
+		How often winners will be chosen and new game start.
 		Use cron patter: https://www.npmjs.com/package/node-cron
 		min(0-59) hours(0-23) day(1-31) month(1-12) week_day(0-7)
-		Timezone is as set on server.
+		Timezone is as set on a server.
 		If you want to change this value in process, clearing databases is recommended.
-    **/
-    "bet_period_cron_pattern": "0 14 * * 0",
+	**/
+  "bet_period_cron_pattern": "0 14 * * 0",
 
-	/** Minimum bet equivalent in USD. **/
-    "min_value_usd": 0.1,
+	/** Minimum bet equivalent in USD **/
+  "min_value_usd": 0.1,
 
-	/** Minimum reward payout equivalent in USD. **/
-    "min_reward_usd": 0.5,
+	/** Minimum reward payout equivalent in USD **/
+  "min_reward_usd": 0.5,
 
-	/** Daily bet limit for one user, equivalent in USD. **/
-    "daily_limit_usd": 1000,
+	/** Daily bet limit for one user, equivalent in USD **/
+  "daily_limit_usd": 1000,
 
-    /** How many confirmations to wait before transaction counts accepted. **/
-    "min_confirmations": 3,
+  /** How many confirmations to wait before transaction counts accepted **/
+  "min_confirmations": 2,
 
-    /** To override min_confirmations for specific cryptocurrency. **/
-    "min_confirmations_ADM": 2,
+  /** Override min_confirmations for specific cryptocurrency **/
+  "min_confirmations_ADM": 1,
 
-    /** Bot's name for notifications **/
-    "bot_name": "Lovely Bet Bot",
+  /** Bot's name for notifications **/
+  "bot_name": "Lovely Bet Bot",
 
-    /** How to reply user in-chat, if first unknown command received. **/
-    "welcome_string": "Hi! 😊 I'm anonymous and Blockchain-proved bet bot. I accept bets on currency rates and pay rewards to winners. ℹ️ Learn more on ADAMANT’s blog or type **/help** to start betting.",
+  /** How to reply user in-chat, if first unknown command received **/
+  "welcome_string": "Hi! 😊 I'm anonymous and Blockchain-proved bet bot. I accept bets on currency rates and pay rewards to winners. ℹ️ Learn more on ADAMANT’s blog or type **/help** to start betting.",
 
-	/** ADAMANT address for notifications and monitoring (if needed, recommended) **/
-    "adamant_notify": "",
+	/** ADAMANT address for notifications and monitoring (optional) **/
+  "adamant_notify": "",
 
-    /** Slack key for notifications and monitoring (if needed) **/
-    "slack": "https://hooks.slack.com/services/",
+	/** Slack key for notifications and monitoring (optional) **/
+	"slack": "https://hooks.slack.com/services/..",
 
-    /** Port for getting debug info.
-		Do not set for live bots, use only for debugging.
-		Allows to get DBs records like http://ip:port/db?tb=incomingTxsDb **/
+	/**
+		Port for getting debug info.
+		Don't enable for live bots, use only for debugging.
+		Allows to get DBs records like http://ip:port/db?tb=incomingTxsDb
+	**/
 	"api": false,
-  /** The software will use verbosity according to log_level.
-    	It can be none < error < warn < info < log.
-  	**/
+
+  /**
+		The software will use verbosity according to log_level.
+    It can be: none < error < warn < info < log.
+	**/
   "log_level": "log"
 }

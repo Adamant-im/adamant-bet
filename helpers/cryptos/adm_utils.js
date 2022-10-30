@@ -1,12 +1,9 @@
 const Store = require('../../modules/Store');
-const helpers = require('../utils');
-const config = require('../../modules/configReader');
 const api = require('../../modules/api');
-const log = require('../../helpers/log');
-
-const {
-  SAT,
-} = require('../const');
+const log = require('../log');
+const config = require('../../modules/configReader');
+const helpers = require('../utils');
+const {SAT} = require('../const');
 const User = Store.user.ADM;
 
 module.exports = {

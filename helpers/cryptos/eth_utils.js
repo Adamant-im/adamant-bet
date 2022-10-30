@@ -29,13 +29,15 @@ module.exports = {
             amount: +(tx.value / ethSat).toFixed(8),
           });
         }
+      }).catch((e)=> {
+        log.warn(`Error while getting Tx ${hash} (if Tx is new, just wait). ${e}`);
       });
     });
   },
   getTransactionStatus(hash) {
     return new Promise((resolve) => {
       eth.getTransactionReceipt(hash, (err, tx) => {
-        if (err) {
+        if (err || !tx) {
           resolve(null);
         } else {
           resolve({
@@ -43,6 +45,8 @@ module.exports = {
             status: tx.status,
           });
         }
+      }).catch((e)=> {
+        log.error(`Error while getting Tx ${hash} (if Tx is new, just wait). ${e}`);
       });
     });
   },
@@ -54,6 +58,8 @@ module.exports = {
         } else {
           resolve(null);
         }
+      }).catch((e)=>{
+        log.error('Error while getting ETH last block: ' + e);
       });
     });
   },
@@ -65,21 +71,21 @@ module.exports = {
         }
         resolve();
       }).catch((e)=>{
-        log.error('Update ETH GAS ' + e);
+        log.error('Error while updating Ether gas price: ' + e);
       });
     });
   },
   updateBalance() {
-    eth.getBalance(User.address).then((err, balance) => {
-      if (!err) {
+    eth.getBalance(User.address).then((balance) => {
+      if (balance) {
         User.balance = balance / ethSat;
       }
     }).catch((e)=>{
-      log.error('Update ETH balance ' + e);
+      log.error('Error while updating ETH balance: ' + e);
     });
   },
   get FEE() {
-    return this.gasPrice * 22000 / ethSat * 2;
+    return this.gasPrice * 28000 / ethSat;
   },
   getNonce() {
     return new Promise((resolve) => {
@@ -87,22 +93,28 @@ module.exports = {
         this.currentNonce = nonce;
         resolve(nonce);
       }).catch((e) =>{
-        log.error('Update ETH nonce ' + e);
+        log.error('Error while updating ETH nonce: ' + e);
         setTimeout(()=>{
           this.getNonce();
         }, 2000);
       });
     });
   },
-  async send(params) {
+  async send(params, contract) {
     try {
       const txParams = {
         nonce: this.currentNonce++,
         gasPrice: this.gasPrice,
-        gas: web3.utils.toHex(22000 * 2),
+        gas: web3.utils.toHex(28000), // Use default gasLimit value
         to: params.address,
         value: params.value * ethSat,
       };
+      if (contract) { // ERC20
+        txParams.value = '0x0';
+        txParams.data = contract.data;
+        txParams.to = contract.address;
+        txParams.gas *= 2; // ERC20 transactions consumes more gas
+      }
 
       const tx = new EthereumTx(txParams);
       tx.sign(privateKey);
@@ -114,15 +126,19 @@ module.exports = {
                 success: true,
                 hash,
               });
-            }).on('error', (error) => {
+            }).on('error', (error) => { // If out of gas error, the second parameter is the receipt
               resolve({
                 success: false,
                 error,
               });
-            }); // If a out of gas error, the second parameter is the receipt.
+            }).catch((e) => {
+              if (!e.toString().includes('Failed to check for transaction receipt')) { // Known bug that after Tx sent successfully, this error occurred anyway https://github.com/ethereum/web3.js/issues/3145
+                log.error('Error while sending ETH tx: ' + e);
+              }
+            });
       });
     } catch (e) {
-      log.error('Error executing Ethereum transaction: ' + e);
+      log.error('Error while executing Ethereum transaction: ' + e);
     }
   },
   lastNonce: 0,

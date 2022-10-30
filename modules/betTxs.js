@@ -54,6 +54,7 @@ module.exports = async (itx, tx) => {
       betRound: null,
       betRoundEndTime: null,
       betMessageText: null,
+      betMessageTextNoMarkdown: null,
       inTxid,
       inAmountMessage: +(inAmountMessage).toFixed(8),
       transactionIsValid: null,
@@ -149,6 +150,7 @@ module.exports = async (itx, tx) => {
       }
 
       const betMessageText = `_${helpers.thousandSeparator(inAmountMessage, false)}_ _${inCurrency}_ (**${helpers.thousandSeparator(pay.inAmountMessageUsd.toFixed(2), false)} USD**) on _${helpers.thousandSeparator(betRate, false)}_ USD for _${config.bet_currency}_ at ${moment(betRoundEndTime).format('YYYY/MM/DD HH:mm Z')} (round _${betRound}_)`;
+      const betMessageTextNoMarkdown = `${inAmountMessage} ${inCurrency} (${pay.inAmountMessageUsd.toFixed(2)} USD) on ${betRate} USD for ${config.bet_currency} at ${moment(betRoundEndTime).format('YYYY/MM/DD HH:mm Z')} (round ${betRound})`;
       const earlyBetKoef = 2 - (roundTime - leftTime) / roundTime;
 
       let roundInfo = `Current round ${Store.round} duration: ${helpers.timeDiffDaysHoursMins(roundTime)}, it ends on ${Task.getBetDateString('current').nextRoundTime}.`;
@@ -162,11 +164,12 @@ module.exports = async (itx, tx) => {
 
       pay.update({
         betMessageText,
+        betMessageTextNoMarkdown,
         earlyBetKoef,
         betRound,
       });
 
-      msgNotify = `${config.notifyName} notifies about incoming bet of ${betMessageText}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
+      msgNotify = `${config.notifyName} notifies about incoming bet of ${betMessageText} from ${tx.senderId}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;
       msgSendBack = `I understood your bet of ${betMessageText}.${periodString} Now I will validate your transfer and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
     }
 

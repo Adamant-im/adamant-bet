@@ -22,8 +22,8 @@ module.exports = async () => {
     transactionIsFailed: false,
   })).forEach(async (pay) => {
     try {
-      let msgNotify = null;
-      let msgSendBack = null;
+      let msgNotify;
+      let msgSendBack;
       let notifyType;
 
       const {
@@ -68,16 +68,17 @@ module.exports = async () => {
           transactionIsConfirmed: true,
         });
         if (!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
-          notifyType = 'info';
-          msgNotify = `${config.notifyName} successfully validated bet of ${pay.betMessageText}.`;
+          log.log(`Successfully validated bet of ${pay.betMessageTextNoMarkdown} from ${pay.senderId}.`);
           msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${helpers.timeDiffDaysHoursMins(pay.betRoundEndTime, Date.now())}. Wish you success!`;
         }
       }
 
       await pay.save();
 
-      if (msgSendBack) {
+      if (msgNotify) {
         notify(msgNotify, notifyType);
+      }
+      if (msgSendBack) {
         await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack);
       }
     } catch (e) {

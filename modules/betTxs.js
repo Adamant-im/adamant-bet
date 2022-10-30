@@ -104,7 +104,7 @@ module.exports = async (itx, tx) => {
       msgSendBack = `I can't recognize bet from your comment _${betString}_. Please put a number. I will try to send transfer back to you. I will validate it and wait for _${min_confirmations}_ block confirmations. It can take a time, please be patient.`;
     } else {
       // Calculate transaction value
-      pay.inAmountMessageUsd = Store.cryptoConvert(inCurrency, 'USD', inAmountMessage);
+      pay.inAmountMessageUsd = Store.cryptoConvert(inCurrency, 'USD', inAmountMessage).outAmount;
       const userDailyValue = await $u.userDailyValue(tx.senderId);
       log.log(`User's ${tx.senderId} daily volume is ${userDailyValue} USD. Transaction value is ${pay.inAmountMessageUsd} USD.`);
       if (userDailyValue + pay.inAmountMessageUsd >= config.daily_limit_usd) {

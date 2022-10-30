@@ -36,7 +36,7 @@ module.exports = async () => {
 
     const outFee = $u[inCurrency].FEE;
     const sentBackAmount = +(inAmountReal - outFee).toFixed(8);
-    const sentBackAmountUsd = Store.cryptoConvert(inCurrency, 'USD', sentBackAmount);
+    const sentBackAmountUsd = Store.cryptoConvert(inCurrency, 'USD', sentBackAmount).outAmount;
     pay.update({
       outFee,
       sentBackAmount,

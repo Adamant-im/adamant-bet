@@ -102,10 +102,10 @@
   "bet_period_cron_pattern": "0 14 * * 0",
 
 	/** Minimum bet equivalent in USD **/
-  "min_value_usd": 0.1,
+  "min_value_usd": 0.01,
 
 	/** Minimum reward payout equivalent in USD **/
-  "min_reward_usd": 0.5,
+  "min_reward_usd": 0.01,
 
 	/** Daily bet limit for one user, equivalent in USD **/
   "daily_limit_usd": 1000,

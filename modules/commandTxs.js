@@ -80,88 +80,96 @@ New features are coming soon! I am learning to provide current placed bets, noti
   };
 }
 
-async function rates(arr) {
-  const coin = (arr[0] || '').toUpperCase().trim();
-  if (!coin || !coin.length) {
-    return {
-      msgNotify: ``,
-      msgSendBack: 'Please specify coin ticker you are interested in. F. e., _/rates ADM_.',
-      notifyType: 'log',
-    };
-  }
-  const currencies = Store.currencies;
-  const res = Object
-      .keys(Store.currencies)
-      .filter((t) => t.startsWith(coin + '/'))
-      .map((t) => {
-        const pair = `${coin}/**${t.replace(coin + '/', '')}**`;
-        return `${pair}: ${currencies[t]}`;
-      })
-      .join(', ');
+async function rates(params) {
+  let output = '';
 
-  if (!res.length) {
-    return {
-      msgNotify: ``,
-      msgSendBack: `I can’t get rates for _${coin}_. Made a typo? Try _/rates ADM_.`,
-      notifyType: 'log',
-    };
+  try {
+    const coin1 = params[0].toUpperCase().trim();
+
+    if (!coin1 || !coin1.length) {
+      output = 'Please specify coin ticker or specific market you are interested in. F. e., */rates ADM*.';
+      return {
+        msgNotify: ``,
+        msgSendBack: `${output}`,
+        notifyType: 'log',
+      };
+    }
+    const currencies = Store.currencies;
+    const res = Object
+        .keys(Store.currencies)
+        .filter((t) => t.startsWith(coin1 + '/'))
+        .map((t) => {
+          const p = `${coin1}/**${t.replace(coin1 + '/', '')}**`;
+          return `${p}: ${currencies[t]}`;
+        })
+        .join(', ');
+
+    if (!res.length) {
+      output = `I can’t get rates for *${coin1}*. Made a typo? Try */rates ADM*.`;
+      return {
+        msgNotify: ``,
+        msgSendBack: `${output}`,
+        notifyType: 'log',
+      };
+    } else {
+      output = `Global market rates for ${coin1}:\n${res}.`;
+    }
+  } catch (e) {
+    log.error(`Error in rates() of ${helpers.getModuleName(module.id)} module: ${e}`);
   }
+
   return {
     msgNotify: ``,
-    msgSendBack: `Market rates: ${res}.`,
+    msgSendBack: output,
     notifyType: 'log',
   };
 }
 
-function calc(arr) {
-  if (arr.length !== 4) { // error request
-    return {
-      msgNotify: ``,
-      msgSendBack: `Wrong arguments. Command works like this: _/calc 2.05 BTC in USD_.`,
-      notifyType: 'log',
-    };
+async function calc(arr) {
+  let output = '';
+
+  try {
+    if (arr.length !== 4) {
+      return {
+        msgNotify: ``,
+        msgSendBack: 'Wrong arguments. Command works like this: */calc 2.05 BTC in USDT*.',
+        notifyType: 'log',
+      };
+    }
+
+    const amount = +arr[0];
+    const inCurrency = arr[1].toUpperCase().trim();
+    const outCurrency = arr[3].toUpperCase().trim();
+
+    if (!amount || amount === Infinity) {
+      output = `It seems amount "*${amount}*" for *${inCurrency}* is not a number. Command works like this: */calc 2.05 BTC in USDT*.`;
+    }
+    if (!$u.isHasTicker(inCurrency)) {
+      output = `I don’t have rates of crypto *${inCurrency}* from Infoservice. Made a typo? Try */calc 2.05 BTC in USDT*.`;
+    }
+    if (!$u.isHasTicker(outCurrency)) {
+      output = `I don’t have rates of crypto *${outCurrency}* from Infoservice. Made a typo? Try */calc 2.05 BTC in USDT*.`;
+    }
+
+    let result;
+    if (!output) {
+      result = Store.cryptoConvert(inCurrency, outCurrency, amount, true).outAmount;
+      if (amount <= 0 || result <= 0 || !result) {
+        output = `I didn’t understand amount for *${inCurrency}*. Command works like this: */calc 2.05 BTC in USDT*.`;
+      } else {
+        if ($u.isFiat(outCurrency)) {
+          result = +result.toFixed(2);
+        }
+        output = `Global market value of ${helpers.thousandSeparator(amount)} ${inCurrency} equals **${helpers.thousandSeparator(result)} ${outCurrency}**.`;
+      }
+    }
+  } catch (e) {
+    log.error(`Error in calc() of ${helpers.getModuleName(module.id)} module: ${e}`);
   }
 
-  const amount = +arr[0];
-  const inCurrency = arr[1].toUpperCase().trim();
-  const outCurrency = arr[3].toUpperCase().trim();
-
-  if (!amount || amount === Infinity) {
-    return {
-      msgNotify: ``,
-      msgSendBack: `It seems amount "_${amount}_" for _${inCurrency}_ is not a number. Command works like this: _/calc 2.05 BTC in USD_.`,
-      notifyType: 'log',
-    };
-  }
-  if (!$u.isHasTicker(inCurrency)) {
-    return {
-      msgNotify: ``,
-      msgSendBack: `I don’t know crypto _${inCurrency}_. Command works like this: _/calc 2.05 BTC in USD_.`,
-      notifyType: 'log',
-    };
-  }
-  if (!$u.isHasTicker(outCurrency)) {
-    return {
-      msgNotify: ``,
-      msgSendBack: `I don’t know crypto _${outCurrency}_. Command works like this: _/calc 2.05 BTC in USD_.`,
-      notifyType: 'log',
-    };
-  }
-  let result = Store.cryptoConvert(inCurrency, outCurrency, amount);
-
-  if (amount <= 0 || result <= 0 || !result) {
-    return {
-      msgNotify: ``,
-      msgSendBack: `I didn’t understand amount for _${inCurrency}_. Command works like this: _/calc 2.05 BTC in USD_.`,
-      notifyType: 'log',
-    };
-  }
-  if ($u.isFiat(outCurrency)) {
-    result = +result.toFixed(2);
-  }
   return {
     msgNotify: ``,
-    msgSendBack: `Market value of ${helpers.thousandSeparator(amount)} ${inCurrency} equals **${helpers.thousandSeparator(result)} ${outCurrency}**.`,
+    msgSendBack: output,
     notifyType: 'log',
   };
 }
@@ -173,7 +181,6 @@ function version() {
     notifyType: 'log',
   };
 }
-
 
 const commands = {
   help,

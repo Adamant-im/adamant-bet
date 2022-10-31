@@ -59,10 +59,10 @@ module.exports = {
   async updateLastBlock() {
     try {
       const blocks = await api.get('blocks', {limit: 1});
-      if (blocks.success) {
+      if (blocks?.success) {
         this.updateSystem('lastBlock', blocks.data.blocks[0]);
       } else {
-        log.warn(`Failed to get last block in updateLastBlock() of ${helpers.getModuleName(module.id)} module. ${blocks.errorMessage}.`);
+        log.warn(`Failed to get last block in updateLastBlock() of ${helpers.getModuleName(module.id)} module. ${blocks?.errorMessage}.`);
       }
     } catch (e) {
       log.error(`Error in updateLastBlock() of ${helpers.getModuleName(module.id)} module: ${e}`);

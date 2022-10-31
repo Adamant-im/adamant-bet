@@ -18,14 +18,14 @@ module.exports = {
   async getAddressCryptoFromAdmAddressADM(coin, admAddress) {
     try {
       const kvsRecords = await api.get('states/get', {senderId: admAddress, key: coin.toLowerCase() + ':address', orderBy: 'timestamp:desc'});
-      if (kvsRecords.success) {
+      if (kvsRecords?.success) {
         if (kvsRecords.data.transactions.length) {
           return kvsRecords.data.transactions[0].asset.state.value;
         } else {
           return 'none';
         }
       } else {
-        log.warn(`Failed to get ${coin} address for ${admAddress} from KVS in getAddressCryptoFromAdmAddressADM() of ${helpers.getModuleName(module.id)} module. ${kvsRecords.errorMessage}.`);
+        log.warn(`Failed to get ${coin} address for ${admAddress} from KVS in getAddressCryptoFromAdmAddressADM() of ${helpers.getModuleName(module.id)} module. ${kvsRecords?.errorMessage}.`);
       }
     } catch (e) {
       log.error(`Error in getAddressCryptoFromAdmAddressADM() of ${helpers.getModuleName(module.id)} module: ${e}`);

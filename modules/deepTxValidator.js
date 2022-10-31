@@ -8,6 +8,8 @@ const config = require('./configReader');
 const helpers = require('../helpers/utils');
 
 module.exports = async (pay, tx) => {
+  console.log(pay);
+  console.log(tx);
   pay.counterTxDeepValidator = ++pay.counterTxDeepValidator || 0;
   if (!tx) {
     await pay.save();
@@ -161,10 +163,10 @@ setInterval(async () => {
     isFinished: false,
   })).forEach(async (pay) => {
     const tx = await api.get('transactions/get', {id: pay.admTxId});
-    if (tx.success) {
-      module.exports(pay, tx);
+    if (tx?.success) {
+      module.exports(pay, tx.data.transaction);
     } else {
-      log.warn(`Failed to get transaction of ${helpers.getModuleName(module.id)} module. ${tx.errorMessage}.`);
+      log.warn(`Failed to get transaction in setInterval() of ${helpers.getModuleName(module.id)} module. ${tx?.errorMessage}.`);
       module.exports(pay, null);
     }
   });

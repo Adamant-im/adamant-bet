@@ -36,7 +36,7 @@ module.exports = async () => {
       triesValidateCounter,
     });
 
-    let etherString;
+    const etherString = '';
 
     const addressString = senderKvsOutAddress === senderId ? senderKvsOutAddress : senderKvsOutAddress + ' (' + senderId + ')';
 
@@ -45,7 +45,7 @@ module.exports = async () => {
 
     try {
       if (!lastBlockNumber[sendCurrency]) {
-        log.warn('Cannot get lastBlockNumber for ' + sendCurrency + '. Waiting for next try.');
+        log.warn(`Cannot get lastBlockNumber for ${sendCurrency}. Waiting for next try.`);
         return;
       }
       const txData = (await $u[sendCurrency].getTransactionStatus(sendTxId));
@@ -56,8 +56,8 @@ module.exports = async () => {
             isFinished: true,
             needHumanCheck: true,
           });
-          notify(`${config.notifyName} unable to verify reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
-          const msgSendBack = `I’ve tried to make reward transfer of _${outAmount}_ _${outCurrency}_ to you, but I cannot validate transaction. Tx hash: _${sendTxId}_. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.`;
+          notify(`${config.notifyName} unable to verify the reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Tried 50 times. Payout is paused, attention needed. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+          const msgSendBack = `I’ve tried to make the reward transfer of _${outAmount}_ _${outCurrency}_ to you, but I cannot validate transaction. Tx hash: _${sendTxId}_. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master as well.`;
           await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
         }
         await payout.save();
@@ -66,7 +66,7 @@ module.exports = async () => {
       const {status, blockNumber} = txData;
 
       if (!blockNumber) {
-        log.warn(`Cannot get blockNumber to verify reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Waiting for next try.`);
+        log.warn(`Cannot get blockNumber to verify the reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Waiting for next try.`);
         return;
       }
 
@@ -81,11 +81,11 @@ module.exports = async () => {
           outTxid: null,
           isPayoutMade: false,
         });
-        notify(`${config.notifyName} notifies that reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_ failed. Tx hash: _${sendTxId}_. Will try again. Balance of _${sendCurrency}_ is _${Store.user[sendCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
-        const msgSendBack = `I’ve tried to make transfer of _${outAmount}_ _${outCurrency}_ to you, but it seems transaction failed. Tx hash: _${sendTxId}_. I will try again. If I’ve said the same several times already, please contact my master.`;
+        notify(`${config.notifyName} notifies that the reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_ failed. Tx hash: _${sendTxId}_. Will try again. Balance of _${sendCurrency}_ is _${Store.user[sendCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'error');
+        const msgSendBack = `I’ve tried to make the transfer of _${outAmount}_ _${outCurrency}_ to you, but it seems transaction failed. Tx hash: _${sendTxId}_. I will try again. If I’ve said the same several times already, please contact my master.`;
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else if (status && payout.outConfirmations >= config['min_confirmations_' + sendCurrency]) {
-        notify(`${config.notifyName} successfully payed reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'info');
+        notify(`${config.notifyName} successfully payed the reward of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tx hash: _${sendTxId}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'info');
         let msgSendBack = 'Hey, you are lucky! Waiting for new bets!';
 
         if (sendCurrency !== 'ADM') {
@@ -107,6 +107,7 @@ module.exports = async () => {
     }
   });
 };
+
 setInterval(() => {
   module.exports();
 }, 15 * 1000);

@@ -40,7 +40,7 @@ module.exports = async (itx, tx) => {
     const betRate = Number(betString);
     inCurrency = String(inCurrency).toUpperCase().trim();
 
-    log.info(`Got a new bet: ${inAmountMessage} ${inCurrency} on ${config.bet_currency} at ${betRate} USD.`);
+    log.info(`Got a new bet from ${tx.senderId}: ${inAmountMessage} ${inCurrency} on ${config.bet_currency} at ${betRate} USD.`);
 
     const pay = new PaymentsDb({
       _id: tx.id,
@@ -167,6 +167,7 @@ module.exports = async (itx, tx) => {
         betMessageTextNoMarkdown,
         earlyBetKoef,
         betRound,
+        betRoundEndTime,
       });
 
       msgNotify = `${config.notifyName} notifies about incoming bet of ${betMessageText} from ${tx.senderId}.${periodString} Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`;

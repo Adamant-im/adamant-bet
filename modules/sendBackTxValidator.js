@@ -94,7 +94,7 @@ module.exports = async () => {
         msgSendBack = 'Here is your refund. Note, some amount spent to cover blockchain fees. Try again!';
 
         if (sendCurrency !== 'ADM') {
-          msgSendBack = `{"type":"${sendCurrency}_transaction","amount":"${sendAmount}","hash":"${sendTxId}","comments":"${msgSendBack}"}`;
+          msgSendBack = `{"type":"${sendCurrency.toLowerCase()}_transaction","amount":"${sendAmount}","hash":"${sendTxId}","comments":"${msgSendBack}"}`;
           pay.isFinished = await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack, 'rich');
         } else {
           pay.isFinished = true;

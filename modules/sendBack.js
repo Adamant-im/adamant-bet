@@ -49,12 +49,12 @@ module.exports = async () => {
         isFinished: true,
       });
       notifyType = 'log';
-      msgNotify = `${config.notifyName} won’t send back payment of _${inAmountReal}_ _${inCurrency}_ because it is less than transaction fee. Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
-      msgSendBack = 'I can’t send transfer back to you because it does not cover blockchain fees. If you think it’s a mistake, contact my master.';
+      msgNotify = `${config.notifyName} won’t send back the payment of _${inAmountReal}_ _${inCurrency}_ to ${pay.senderId} because it is less than transaction fee. Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
+      msgSendBack = 'I can’t send the transfer back to you because it does not cover blockchain fees. If you think it’s a mistake, contact my master.';
     } else if (sentBackAmount > Store.user[inCurrency].balance) {
       notifyType = 'error';
-      msgNotify = `${config.notifyName} notifies about insufficient balance for send back of _${inAmountReal}_ _${inCurrency}_. Attention needed. Balance of _${inCurrency}_ is _${Store.user[inCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
-      msgSendBack = 'I can’t send transfer back to you because of insufficient balance. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.';
+      msgNotify = `${config.notifyName} notifies about insufficient balance for send back of _${inAmountReal}_ _${inCurrency}_ to ${pay.senderId}. Attention needed. Balance of _${inCurrency}_ is _${Store.user[inCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
+      msgSendBack = 'I can’t send the transfer back to you because of insufficient balance. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.';
       pay.update({
         errorSendBack: 18,
         needHumanCheck: true,
@@ -70,7 +70,7 @@ module.exports = async () => {
       if (result.success) {
         pay.sentBackTx = result.hash;
         Store.user[inCurrency].balance -= sentBackAmount;
-        log.info(`Successful send back of ${sentBackAmount} ${inCurrency}. Hash: ${result.hash}.`);
+        log.log(`Successful send back of ${sentBackAmount} ${inCurrency} to ${pay.senderId}. Hash: ${result.hash}.`);
       } else { // Can't make a transaction
         if (++pay.counterSendBack < 50) {
           await pay.save();
@@ -83,12 +83,12 @@ module.exports = async () => {
           isFinished: true,
         });
         notifyType = 'error';
-        log.error(`Failed to send back of ${sentBackAmount} ${inCurrency}. Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`);
-        msgNotify = `${config.notifyName} cannot make transaction to send back _${sentBackAmount}_ _${inCurrency}_. Attention needed. Balance of _${inCurrency}_ is _${Store.user[inCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
-        msgSendBack = 'I’ve tried to send back transfer to you, but something went wrong. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.';
+        log.error(`Failed to send back of ${sentBackAmount} ${inCurrency} to ${pay.senderId}. Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`);
+        msgNotify = `${config.notifyName} cannot make the transaction to send back _${sentBackAmount}_ _${inCurrency}_ to ${pay.senderId}. Attention needed. Balance of _${inCurrency}_ is _${Store.user[inCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${pay.itxId}.`;
+        msgSendBack = 'I’ve tried to send back the transfer to you, but something went wrong. I’ve already notified my master. If you wouldn’t receive transfer in two days, contact my master also.';
       }
     }
-    log.info(`sendBack logs:\n\tCoin: ${inCurrency}\n\ttx: ${pay.sentBackTx}\n\terror: ${pay.errorSendBack}\n\tbalance: ${Store.user[inCurrency].balance}\n\tfee: ${outFee}\n\tamount: ${sentBackAmount}\n\teqUsd: ${sentBackAmountUsd}`);
+
     await pay.save();
     if (msgNotify) {
       notify(msgNotify, notifyType);

@@ -10,18 +10,21 @@ const calcRounds = require('../modules/calcRounds');
 
 module.exports = {
   betsJob: null,
+
   ifCoolPeriod(dateTx) {
     const remainHours = (this.betsJob.nextDates() - dateTx) / 1000 / 60 / 60;
     return remainHours < config.cool_period_hours;
   },
+
   coolPeriodStartDate() {
-    const dateint = this.betsJob.nextDates() - config.cool_period_hours * 60 * 60 * 1000;
-    const datestring = moment(dateint).format('YYYY/MM/DD HH:mm Z');
+    const dateInt = this.betsJob.nextDates() - config.cool_period_hours * 60 * 60 * 1000;
+    const dateString = moment(dateInt).format('YYYY/MM/DD HH:mm Z');
     return {
-      dateint,
-      datestring,
+      dateInt,
+      dateString,
     };
   },
+
   getBetDateString(round) {
     let nextRoundTime; let tillString;
     if (round === 'current') {
@@ -36,26 +39,30 @@ module.exports = {
       tillString,
     };
   },
+
   getRoundTime() {
     return this.betsJob.nextDates(2)[1]-this.betsJob.nextDates();
   },
+
   getTimeLeft(since) {
     const interval = this.betsJob.nextDates()-since;
     return interval > 0 ? interval : 0;
   },
+
   setJob() {
     const cronPattern = config.bet_period_cron_pattern;
     this.betsJob = cron.job(cronPattern, () => {
-      log.info('Cron job started at ' + moment(Date.now()).format('YYYY/MM/DD HH:mm Z'));
+      log.log('Cron job started at ' + moment(Date.now()).format('YYYY/MM/DD HH:mm Z'));
       this.nextRound();
     }, null, true);
-    log.info('Cron started with patter: ' + cronPattern);
+    log.info('Cron started with pattern: ' + cronPattern);
     this.betsJob.start();
 
-    setTimeout(()=>{ // Wait for Store initialization
+    setTimeout(() => { // Wait for Store initialization
       notify(`**${config.notifyName} started** for address _${Store.user.ADM.address}_ (ver. ${Store.version}). Current round _${Store.round}_ ends in _${this.getBetDateString('current').tillString}_ (_${this.getBetDateString('current').nextRoundTime}_).`, 'info');
     }, 7000);
   },
+
   async nextRound() {
     try {
       const round = Store.round ? (Store.round + 1) : 1;
@@ -72,8 +79,6 @@ module.exports = {
         createPayoutsDate: null,
       });
       await newRound.save();
-      // console.log('New round:');
-      // console.log(newRound);
 
       let infoString = `New round number ${newRound._id} started at ${moment(newRound.createDate).format('YYYY/MM/DD HH:mm Z')}.`;
       infoString += ` End date: ${moment(newRound.endDate).format('YYYY/MM/DD HH:mm Z')}. Duration: ${helpers.timeDiffDaysHoursMins(newRound.duration)}.`;
@@ -86,9 +91,10 @@ module.exports = {
       log.error('Error while starting new round: ' + e);
     }
   },
+
   async checkRounds() {
     try {
-      log.log(`Checking rounds..`);
+      log.log(`Checking rounds…`);
 
       let toCreateNewRound = false;
 

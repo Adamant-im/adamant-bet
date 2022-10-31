@@ -49,18 +49,13 @@ module.exports = async () => {
               payoutValueUsd,
             } = pay;
 
-            console.log(`3/ Payment for round ${_id}: Tx ${admTxId} — ${betMessageText}.`);
+            log.log(`3/ Payment for round ${_id}: Tx ${admTxId} — ${betMessageText}.`);
 
             let msgSendBack = ``;
             const rewardsString = [];
             let newPayout;
 
             if (isWinner) {
-              // log.log('cr');
-              // log.log(cr);
-              // log.log('pay2');
-              // log.log(pay);
-
               const {RewardsPayoutsDb} = db;
 
               // If no payout Tx added earlier, add it now for each of accepted coins
@@ -102,10 +97,8 @@ module.exports = async () => {
                 }
               });
 
-              msgSendBack = `**Bingo!** Your bet of ${betMessageText} won! Actual rate is _${helpers.thousandSeparator(winBet, false)}_ USD, accuracy coef — _${accuracyKoef.toFixed(2)}_. Early bet coef is _${earlyBetKoef.toFixed(2)}_.`;
-              msgSendBack += `
-
-Rewards are: ${rewardsString.join(', ')} (**~${helpers.thousandSeparator(payoutValueUsd.toFixed(2), false)} USD** at time of bets placed).`;
+              msgSendBack = `**Bingo!** Your bet of ${betMessageText} won! Actual rate is _${helpers.thousandSeparator(winBet, false)}_ USD, accuracy koef — _${accuracyKoef.toFixed(2)}_. Early bet koef is _${earlyBetKoef.toFixed(2)}_.`;
+              msgSendBack += `\n\nRewards are: ${rewardsString.join(', ')} (**~${helpers.thousandSeparator(payoutValueUsd.toFixed(2), false)} USD** at time of bets placed).`;
               msgSendBack += ` I will send these funds soon, please be patient. Wish you luck next rounds!`;
             } else { // if isWinner === false
               msgSendBack = `D'oh! Your bet of ${betMessageText} lose. Actual rate is _${helpers.thousandSeparator(winBet, false)}_ USD. Wish you luck next rounds!`;
@@ -113,13 +106,13 @@ Rewards are: ${rewardsString.join(', ')} (**~${helpers.thousandSeparator(payoutV
 
             let logString = '';
             logString = `Round ${_id} results for ${senderId} / ${admTxId}: ${isWinner}.`;
-            logString += ` Actual rate: ${helpers.thousandSeparator(winBet, false)} USD, accuracy coef: ${accuracyKoef.toFixed(2)}, Early bet coef: ${earlyBetKoef.toFixed(2)}.`;
+            logString += ` Actual rate: ${helpers.thousandSeparator(winBet, false)} USD, accuracy koef: ${accuracyKoef.toFixed(2)}, Early bet koef: ${earlyBetKoef.toFixed(2)}.`;
             if (pay.isWinner) {
               logString += ` Rewards are: ${rewardsString.join(', ')} (~${helpers.thousandSeparator(payoutValueUsd.toFixed(2), false)} USD at time of bets placed).`;
             }
             logString += ` Bet message text: ${betMessageText}.`;
 
-            log.info(logString);
+            log.log(logString);
             await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
 
             isFinished = true;

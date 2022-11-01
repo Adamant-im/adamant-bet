@@ -63,7 +63,7 @@ module.exports = class LskBaseCoin {
 
   /**
    * @abstract
-   * @return {Promise<Number>}
+   * @return {Number}
    */
   getLastBlockHeight() {
     return undefined;
@@ -71,7 +71,7 @@ module.exports = class LskBaseCoin {
 
   /**
    * @abstract
-   * @return {Object}
+   * @return {Promise<Number>}
    */
   sendTransaction() {
     return undefined;
@@ -201,7 +201,11 @@ module.exports = class LskBaseCoin {
    * @return {Object}
    */
   _get(url, params) {
-    return this._getClient().get(url, {params}).then((response) => response.data);
+    return this._getClient().get(url, {params})
+        .then((response) => response.data)
+        .catch((e) => {
+          log.warn(`Error while requesting Lisk Node url '${url}' with params '${JSON.stringify(params)}' in _get() of ${helpers.getModuleName(module.id)} module: ` + e);
+        });
   }
 
   /**
@@ -211,7 +215,11 @@ module.exports = class LskBaseCoin {
    * @return {Object}
    */
   _getService(url, params) {
-    return this._getServiceClient().get(url, {params}).then((response) => response.data);
+    return this._getServiceClient().get(url, {params})
+        .then((response) => response.data)
+        .catch((e) => {
+          log.warn(`Error while requesting Lisk Service url '${url}' with params '${JSON.stringify(params)}' in _getService() of ${helpers.getModuleName(module.id)} module: ` + e);
+        });
   }
 
   /**
@@ -335,14 +343,18 @@ module.exports = class LskBaseCoin {
  * @return {Object}
  */
 function createServiceClient(url) {
-  const client = axios.create({baseURL: url});
-  client.interceptors.response.use(null, (error) => {
-    if (error.response && Number(error.response.status) >= 500) {
-      console.error(`Request to ${url} failed.`, error);
-    }
-    return Promise.reject(error);
-  });
-  return client;
+  try {
+    const client = axios.create({baseURL: url});
+    client.interceptors.response.use(null, (error) => {
+      if (error.response && Number(error.response.status) >= 500) {
+        console.error(`Request to ${url} failed.`, error);
+      }
+      return Promise.reject(error);
+    });
+    return client;
+  } catch (e) {
+    log.error(`Error in createServiceClient() of ${helpers.getModuleName(module.id)} module: ${e}`);
+  }
 }
 
 /**
@@ -351,17 +363,21 @@ function createServiceClient(url) {
  * @return {Object}
  */
 function createClient(url) {
-  const client = axios.create({baseURL: url});
-  client.interceptors.response.use(null, (error) => {
-    if (error.response && Number(error.response.status) >= 500) {
-      console.error(`Request to ${url} failed.`, error);
-    }
-    if (error.response && Number(error.response.status) === 404) {
-      if (error.response?.data?.errors[0]?.message && error.response.data.errors[0].message.includes('was not found')) {
-        return error.response;
+  try {
+    const client = axios.create({baseURL: url});
+    client.interceptors.response.use(null, (error) => {
+      if (error.response && Number(error.response.status) >= 500) {
+        console.error(`Request to ${url} failed.`, error);
       }
-    }
-    return Promise.reject(error);
-  });
-  return client;
+      if (error.response && Number(error.response.status) === 404) {
+        if (error.response?.data?.errors[0]?.message && error.response.data.errors[0].message.includes('was not found')) {
+          return error.response;
+        }
+      }
+      return Promise.reject(error);
+    });
+    return client;
+  } catch (e) {
+    log.error(`Error in createClient() of ${helpers.getModuleName(module.id)} module: ${e}`);
+  }
 }

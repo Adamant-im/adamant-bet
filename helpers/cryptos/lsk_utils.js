@@ -23,11 +23,15 @@ module.exports = class LskCoin extends LskBaseCoin {
   }
 
   getHeight() {
-    return this._get(`${lskNode}/api/node/info`, {}).then((data) => Number(data.data.height) || 0);
+    return this._get(`${lskNode}/api/node/info`, {})
+        .then((data) => Number(data.data.height) || 0)
+        .catch((e) => {
+          log.warn(`Error while getting Lisk height in getHeight() of ${helpers.getModuleName(module.id)} module: ` + e);
+        });
   }
 
   /**
-   * Returns last block of LSK blockchain from cache, if it's up-to-date.
+   * Returns last block of LSK blockchain from cache, if it's up to date.
    * If not, makes an API request and updates cached data.
    * Used only for this.getLastBlockHeight()
    * @override
@@ -95,10 +99,13 @@ module.exports = class LskCoin extends LskBaseCoin {
    * Send signed transaction to blockchain network
    * @override
    * @param {Object} signedTx
+   * @return {Promise<Number>}
    */
   sendTransaction(signedTx) {
     return this._getClient().post('/api/transactions', signedTx).then((response) => {
       return response.data.data.transactionId;
+    }).catch((e) => {
+      log.warn(`Error while sending transaction in sendTransaction() of ${helpers.getModuleName(module.id)} module: ` + e);
     });
   }
 
@@ -205,9 +212,10 @@ module.exports = class LskCoin extends LskBaseCoin {
           status: true,
         };
       }
+    }).catch((e) => {
+      log.warn(`Error while getting transaction status in getTransactionStatus() for ${txId} of ${helpers.getModuleName(module.id)} module: ` + e);
     });
   }
-
   /**
    * Returns tx
    * @override
@@ -228,6 +236,8 @@ module.exports = class LskCoin extends LskBaseCoin {
           amount: +(formedTx.amount).toFixed(8),
         };
       }
+    }).catch((e) => {
+      log.warn(`Error while getting transaction status in getTransaction() for ${txId} of ${helpers.getModuleName(module.id)} module: ` + e);
     });
   }
 };

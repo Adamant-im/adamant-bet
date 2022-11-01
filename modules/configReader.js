@@ -114,7 +114,7 @@ try {
     } else if (fs.existsSync('./config.json')) {
       configFile = './config.json';
     } else {
-      configFile = './config.default.json';
+      configFile = './config.default.jsonc';
     }
   }
   config = JSON.parse(jsonminify(fs.readFileSync(configFile, 'utf-8')));

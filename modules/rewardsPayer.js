@@ -75,7 +75,7 @@ module.exports = async () => {
         const msgSendBack = `I can’t send you the reward payment of _${outAmount}_ _${outCurrency}_ because of insufficient funds. I've already notified my master to fix it.`;
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else {
-        log.warn(`${config.notifyName} notifies about insufficient balance for the reward payment of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
+        log.warn(`Insufficient balance for the reward payment of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
       }
       await payout.update({
         triesSendCounter,
@@ -109,7 +109,7 @@ module.exports = async () => {
         const msgSendBack = `I’ve tried to make the transfer of _${outAmount}_ _${outCurrency}_ to you, but something went wrong. I've already notified my master to fix it.`;
         await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       } else {
-        log.warn(`${config.notifyName} unable to make the reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
+        log.warn(`Unable to make the reward transaction of _${outAmount}_ _${outCurrency}_ to _${addressString}_ in round _${betRound}_. Tries counter: ${triesSendCounter} times. Balance of _${outCurrency}_ is _${Store.user[outCurrency].balance}_. ${etherString}Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`);
       }
     }
 

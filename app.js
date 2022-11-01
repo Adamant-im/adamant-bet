@@ -23,7 +23,7 @@ function init() {
       db.PaymentsDb.db.drop();
       db.RoundsDb.db.drop();
       db.RewardsPayoutsDb.db.drop();
-      notify(`*${config.notifyName}: database cleared*. Manually stop the Bot now.`, 'info');
+      console.log('Database cleared. Manually stop the Bot now.');
     } else {
       require('./modules/confirmationsCounter');
       require('./modules/sendBack');

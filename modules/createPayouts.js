@@ -25,6 +25,7 @@ module.exports = async () => {
             fullRoundDuration,
 
             winBet,
+            totalWinnersCount,
           } = cr;
 
           let infoString = `Creating payouts for round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')} (${+Date.now()}).`;
@@ -98,7 +99,8 @@ module.exports = async () => {
               });
 
               msgSendBack = `**Bingo!** Your bet of ${betMessageText} won! Actual rate is _${helpers.thousandSeparator(winBet, false)}_ USD, accuracy koef — _${accuracyKoef.toFixed(2)}_. Early bet koef is _${earlyBetKoef.toFixed(2)}_.`;
-              msgSendBack += `\n\nRewards are: ${rewardsString.join(', ')} (**~${helpers.thousandSeparator(payoutValueUsd.toFixed(2), false)} USD** at time of bets placed).`;
+              msgSendBack += `\n\nRewards are distributed among ${totalWinnersCount} winners. For this bet, rewards are:`;
+              msgSendBack += ` ${rewardsString.join(', ')} (**~${helpers.thousandSeparator(payoutValueUsd.toFixed(2), false)} USD** at time of bets placed).`;
               msgSendBack += ` I will send these funds soon, please be patient. Wish you luck next rounds!`;
             } else { // if isWinner === false
               msgSendBack = `D'oh! Your bet of ${betMessageText} lose. Actual rate is _${helpers.thousandSeparator(winBet, false)}_ USD. Wish you luck next rounds!`;

@@ -8,8 +8,6 @@ const config = require('./configReader');
 const helpers = require('../helpers/utils');
 
 module.exports = async (pay, tx) => {
-  console.log(pay);
-  console.log(tx);
   pay.counterTxDeepValidator = ++pay.counterTxDeepValidator || 0;
   if (!tx) {
     await pay.save();

@@ -91,7 +91,7 @@ module.exports = async () => {
         if (sendCurrency !== 'ADM') {
           msgSendBack = `{"type":"${outCurrency.toLowerCase()}_transaction","amount":"${outAmount}","hash":"${outTxid}","comments":"${msgSendBack}"}`;
           const message = await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack, 'rich');
-          if (message.success) {
+          if (message?.success) {
             payout.isFinished = true;
           } else {
             log.warn(`Failed to send ADM message on sent Tx ${outTxid} of ${outAmount} ${outCurrency} to ${senderId}. I will try again. ${message?.errorMessage}.`);

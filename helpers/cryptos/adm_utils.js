@@ -41,14 +41,14 @@ module.exports = {
   async send(params) {
     const {address, value, comment} = params;
     const payment = await api.sendMessageWithLog(config.passPhrase, address, comment, 'basic', value);
-    if (payment.success) {
+    if (payment?.success) {
       log.log(`Successfully sent ${value} ADM to ${address} with comment '${comment}', Tx hash: ${payment.data.transactionId}.`);
       return {
         success: payment.data.success,
         hash: payment.data.transactionId,
       };
     } else {
-      log.warn(`Failed to send ${value} ADM to ${address} with comment ${comment} in send() of ${helpers.getModuleName(module.id)} module. ${payment.errorMessage}.`);
+      log.warn(`Failed to send ${value} ADM to ${address} with comment ${comment} in send() of ${helpers.getModuleName(module.id)} module. ${payment?.errorMessage}.`);
       return {
         success: false,
         error: payment.errorMessage,

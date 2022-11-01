@@ -95,7 +95,12 @@ module.exports = async () => {
 
         if (sendCurrency !== 'ADM') {
           msgSendBack = `{"type":"${sendCurrency.toLowerCase()}_transaction","amount":"${sendAmount}","hash":"${sendTxId}","comments":"${msgSendBack}"}`;
-          pay.isFinished = await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack, 'rich');
+          const message = await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack, 'rich');
+          if (message?.success) {
+            pay.isFinished = true;
+          } else {
+            log.warn(`Failed to send ADM message on sent Tx ${sendTxId} of ${sendAmount} ${sendCurrency} to ${pay.senderId}. I will try again. ${message?.errorMessage}.`);
+          }
         } else {
           pay.isFinished = true;
         }
@@ -106,10 +111,11 @@ module.exports = async () => {
         notify(msgNotify, notifyType);
       }
     } catch (e) {
-      log.error(`Error in sedBackTxValidator module: ${e}`);
+      log.error(`Error in sendBackTxValidator module: ${e}`);
     }
   });
 };
+
 setInterval(() => {
   module.exports();
 }, 15 * 1000);

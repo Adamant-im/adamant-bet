@@ -145,7 +145,7 @@ module.exports = async () => {
             betRound: _id,
           }))
               .forEach(async (pay) => {
-                log.log(`1/ Payment for round ${_id}: Tx ${pay.admTxId} — ${pay.betMessageTextNoMarkdown}.`);
+                log.log(`1/ Bet on round ${_id}: Tx ${pay.admTxId} — ${pay.betMessageTextNoMarkdown}.`);
 
                 totalBetsCount++;
                 totalSumUsd+= pay.inAmountMessageUsd;

@@ -47,11 +47,8 @@ module.exports = async () => {
               accuracyKoef,
               earlyBetKoef,
               betMessageText,
-              betMessageTextNoMarkdown,
               payoutValueUsd,
             } = pay;
-
-            log.log(`3/ Payment for round ${_id}: Tx ${admTxId} — ${betMessageTextNoMarkdown}.`);
 
             let msgSendBack = ``;
             const rewardsString = [];

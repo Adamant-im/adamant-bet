@@ -47,10 +47,11 @@ module.exports = async () => {
               accuracyKoef,
               earlyBetKoef,
               betMessageText,
+              betMessageTextNoMarkdown,
               payoutValueUsd,
             } = pay;
 
-            log.log(`3/ Payment for round ${_id}: Tx ${admTxId} — ${betMessageText}.`);
+            log.log(`3/ Payment for round ${_id}: Tx ${admTxId} — ${betMessageTextNoMarkdown}.`);
 
             let msgSendBack = ``;
             const rewardsString = [];
@@ -93,7 +94,7 @@ module.exports = async () => {
                   });
 
                   const addressString = newPayout.senderKvsOutAddress === newPayout.senderId ? newPayout.senderKvsOutAddress : newPayout.senderKvsOutAddress + ' (' + newPayout.senderId + ')';
-                  log.info(`Created reward payment of ${newPayout.outAmount} ${newPayout.outCurrency} to ${addressString} / Tx ${newPayout.itxId} (round ${newPayout.betRound}).`);
+                  log.log(`Created reward payment of ${newPayout.outAmount} ${newPayout.outCurrency} to ${addressString} / Tx ${newPayout.itxId} (round ${newPayout.betRound}).`);
                   await newPayout.save();
                 }
               });

@@ -37,7 +37,7 @@ module.exports = {
         } else {
           const result = JSON.parse(body);
           if (result && result.Response === 'Success') {
-            log.info(`Got crypto rate successfully on ${UtcDateString}: ${body}.`);
+            log.log(`Got crypto rate successfully on ${UtcDateString}: ${body}.`);
             rate = result.Data[1].close;
             if (!rate) {
               rate = result.Data[0].close;

@@ -52,7 +52,7 @@ module.exports = async () => {
         triesSendCounter,
       }, true);
       logString = `Amount is ${outAmount} ${outCurrency} for payout to ${addressString} / Tx ${itxId} (round ${betRound}). Skipping.`;
-      log.warn(logString);
+      log.log(logString);
       return;
     } else if (outAmountUsd < minRewardUsd) {
       await payout.update({

@@ -24,6 +24,7 @@ module.exports = async () => {
             rewardPoolUsd,
             rewardPoolADM,
             rewardPoolETH,
+            rewardPoolLSK,
             totalWinnersWeightedPoolUsd,
           } = cr;
 
@@ -44,6 +45,7 @@ module.exports = async () => {
               rewardPercent,
               payoutValueADM,
               payoutValueETH,
+              payoutValueLSK,
               payoutValueUsd,
             } = pay2;
 
@@ -51,6 +53,7 @@ module.exports = async () => {
               rewardPercent = weightedValueUsd / totalWinnersWeightedPoolUsd;
               payoutValueADM = rewardPercent * rewardPoolADM;
               payoutValueETH = rewardPercent * rewardPoolETH;
+              payoutValueLSK = rewardPercent * rewardPoolLSK;
               payoutValueUsd = rewardPercent * rewardPoolUsd;
             }
 
@@ -60,6 +63,7 @@ module.exports = async () => {
               rewardPercent,
               payoutValueADM,
               payoutValueETH,
+              payoutValueLSK,
               payoutValueUsd,
             }, true);
           });

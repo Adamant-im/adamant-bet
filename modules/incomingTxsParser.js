@@ -1,22 +1,21 @@
 const db = require('./DB');
 const log = require('../helpers/log');
-const helpers = require('../helpers/utils');
 const api = require('./api');
+const helpers = require('../helpers/utils');
 const config = require('./configReader');
 const betTxs = require('./betTxs');
 const commandTxs = require('./commandTxs');
 const unknownTxs = require('./unknownTxs');
 const notify = require('../helpers/notify');
-const Store = require('./Store');
 
-const historyTxs = {}; // catch saved txs. Defender dublicated TODO: clear uptime
+const historyTxs = {};
 
 module.exports = async (tx) => {
   if (!tx) {
     return;
   }
 
-  if (historyTxs[tx.id]) {
+  if (historyTxs[tx.id]) { // do not process one tx twice
     return;
   }
 
@@ -26,7 +25,7 @@ module.exports = async (tx) => {
     return;
   }
 
-  log.log(`Received incoming transaction: ${tx.id} from ${tx.senderId}.`);
+  log.log(`Processing new incoming transaction ${tx.id} from ${tx.senderId} via ${tx.height ? 'REST' : 'socket'}…`);
 
   let msg = '';
   const chat = tx.asset.chat;
@@ -46,11 +45,13 @@ module.exports = async (tx) => {
     type = 'command';
   }
 
-  const spamerIsNotyfy = await IncomingTxsDb.findOne({
+  // Check if we should notify about spammer, only once per 24 hours
+  const spamerIsNotify = await IncomingTxsDb.findOne({
     sender: tx.senderId,
     isSpam: true,
     date: {$gt: (helpers.unix() - 24 * 3600 * 1000)}, // last 24h
   });
+
   const itx = new IncomingTxsDb({
     _id: tx.id,
     txid: tx.id,
@@ -62,6 +63,7 @@ module.exports = async (tx) => {
     sender: tx.senderId,
     type, // command, bet or unknown
     isProcessed: false,
+    isNonAdmin: false,
   });
 
   if (msg.toLowerCase().trim() === 'deposit') {
@@ -75,7 +77,7 @@ module.exports = async (tx) => {
     date: {$gt: (helpers.unix() - 24 * 3600 * 1000)}, // last 24h
   })).length;
 
-  if (countRequestsUser > 65 || spamerIsNotyfy) {
+  if (countRequestsUser > 50 || spamerIsNotify) { // 50 per 24h is a limit for accepting commands, otherwise user will be considered as spammer
     itx.update({
       isProcessed: true,
       isSpam: true,
@@ -88,8 +90,8 @@ module.exports = async (tx) => {
   }
   historyTxs[tx.id] = helpers.unix();
 
-  if (itx.isSpam && !spamerIsNotyfy) {
-    notify(`Bet Bot ${Store.botName} notifies _${tx.senderId}_ is a spammer or talks too much. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`, 'warn');
+  if (itx.isSpam && !spamerIsNotify) {
+    notify(`${config.notifyName} notifies _${tx.senderId}_ is a spammer or talks too much. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}.`, 'warn');
     const msgSendBack = `I’ve _banned_ you. You’ve sent too much transactions to me.`;
     await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
     return;

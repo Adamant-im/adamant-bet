@@ -2,7 +2,6 @@ const db = require('./DB');
 const config = require('./configReader');
 const $u = require('../helpers/cryptos');
 const helpers = require('../helpers/utils');
-const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
 const api = require('./api');
@@ -13,6 +12,7 @@ module.exports = async () => {
   const lastBlockNumber = {
     ETH: await $u.ETH.getLastBlock(),
     ADM: await $u.ADM.getLastBlock(),
+    LSK: await $u.LSK.getLastBlock(),
   };
 
   (await PaymentsDb.find({
@@ -22,8 +22,8 @@ module.exports = async () => {
     transactionIsFailed: false,
   })).forEach(async (pay) => {
     try {
-      let msgNotify = null;
-      let msgSendBack = null;
+      let msgNotify;
+      let msgSendBack;
       let notifyType;
 
       const {
@@ -61,23 +61,24 @@ module.exports = async () => {
           isFinished: true,
         });
         notifyType = 'error';
-        msgNotify = `Bet Bot ${Store.botName} notifies transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is Failed. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
+        msgNotify = `${config.notifyName} notifies transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is Failed. Tx hash: _${inTxid}_. Income ADAMANT Tx: https://explorer.adamant.im/tx/${admTxId}.`;
         msgSendBack = `Transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${inTxid}_ is Failed and will not be processed. Check _${pay.inCurrency}_ blockchain explorer and try again. If you think it’s a mistake, contact my master.`;
       } else if (pay.inTxStatus && pay.inConfirmations >= config['min_confirmations_' + inCurrency]) { // Tx verified
         pay.update({
           transactionIsConfirmed: true,
         });
         if (!pay.isKVSnotFoundNotified && !pay.needToSendBack) {
-          notifyType = 'info';
-          msgNotify = `Bet Bot ${Store.botName} successfully validated bet of ${pay.betMessageText}.`;
+          log.log(`Successfully validated bet of ${pay.betMessageTextNoMarkdown} from ${pay.senderId}.`);
           msgSendBack = `I have **validated and accepted** your bet of ${pay.betMessageText}. I will notify you about results in ${helpers.timeDiffDaysHoursMins(pay.betRoundEndTime, Date.now())}. Wish you success!`;
         }
       }
 
       await pay.save();
 
-      if (msgSendBack) {
+      if (msgNotify) {
         notify(msgNotify, notifyType);
+      }
+      if (msgSendBack) {
         await api.sendMessageWithLog(config.passPhrase, pay.senderId, msgSendBack);
       }
     } catch (e) {

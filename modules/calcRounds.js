@@ -35,18 +35,24 @@ module.exports = async () => {
             totalSumUsd,
             totalADMbetsCount,
             totalETHbetsCount,
+            totalLSKbetsCount,
             totalADMbetsSum,
             totalETHbetsSum,
+            totalLSKbetsSum,
             totalADMbetsSumUsd,
             totalETHbetsSumUsd,
+            totalLSKbetsSumUsd,
             totalWinnersCount,
             totalWinnersADMCount,
             totalWinnersETHCount,
+            totalWinnersLSKCount,
             totalWinnersETHSum,
             totalWinnersADMSum,
+            totalWinnersLSKSum,
             totalWinnersUsdSum,
             totalWinnersADMSumUsd,
             totalWinnersETHSumUsd,
+            totalWinnersLSKSumUsd,
             totalWinnersWeightedPoolUsd,
           } = cr;
 
@@ -59,18 +65,24 @@ module.exports = async () => {
           totalSumUsd = 0;
           totalADMbetsCount = 0;
           totalETHbetsCount = 0;
+          totalLSKbetsCount = 0;
           totalADMbetsSum = 0;
           totalETHbetsSum = 0;
+          totalLSKbetsSum = 0;
           totalADMbetsSumUsd = 0;
           totalETHbetsSumUsd = 0;
+          totalLSKbetsSumUsd = 0;
           totalWinnersCount = 0;
           totalWinnersADMCount = 0;
           totalWinnersETHCount = 0;
+          totalWinnersLSKCount = 0;
           totalWinnersETHSum = 0;
           totalWinnersADMSum = 0;
+          totalWinnersLSKSum = 0;
           totalWinnersUsdSum = 0;
           totalWinnersADMSumUsd = 0;
           totalWinnersETHSumUsd = 0;
+          totalWinnersLSKSumUsd = 0;
           totalWinnersWeightedPoolUsd = 0;
           betCurrency = config.bet_currency;
 
@@ -80,21 +92,16 @@ module.exports = async () => {
           const timeDeltaSec = absTimeSinceEndDate / 1000;
 
           if (timeDeltaSec < 100) { // good, time diff less, than 100 sec
-            log.info(`Great, expected time difference in round calculation is ${timeDeltaSec} sec.`);
+            log.log(`Great, expected time difference in round calculation is ${timeDeltaSec} sec.`);
           } else if (timeSinceEndDate < 0) {
             if (!frozenFor24hoursFrom) {
               const tempWinBetNow = await ccRate.getFreshCryptoRate(betCurrency, Date.now());
-              infoString = `*Something is wrong*. We are calculating results for round which doesn't end yet. Is _bet_period_cron_pattern_ changed in config? Check everything carefully!`;
-              infoString += `
-
-Round _${_id}_ will end on _${moment(endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${helpers.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
+              infoString = `*Something is wrong*. We are calculating results for round which doesn't end yet. Is _bet_period_cron_pattern_ changed in config?`;
+              infoString += `\n\nRound _${_id}_ will end on _${moment(endDate).format('YYYY/MM/DD HH:mm Z')}_ and now is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (difference: _${helpers.timeDiffDaysHoursMins(absTimeSinceEndDate)}_).`;
               infoString += ` Round created: _${moment(createDate).format('YYYY/MM/DD HH:mm Z')}_. Duration: _${helpers.timeDiffDaysHoursMins(duration)}_.`;
               infoString += ` Full round duration: _${helpers.timeDiffDaysHoursMins(fullRoundDuration)}_.`;
               infoString += ` Actual bet rate now: _${helpers.thousandSeparator(tempWinBetNow, false)}_ USD for _${betCurrency}_.`;
-
-              infoString += `
-
-Calculation for this round will be paused for 24 hours. If no action is taken, calculation will be continued and reward payments processed.`;
+              infoString += `\n\nCalculation for this round will be paused for 24 hours. If no action is taken, calculation will be continued and reward payments processed.`;
 
               await cr.update({
                 frozenFor24hoursFrom: Date.now(),
@@ -109,16 +116,15 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
               notify(infoString, 'warn');
             }
           } else {// timeSinceEndDate > 0
-            log.info(`Warning. We are calculating results for round ended in the past. Time difference ${helpers.timeDiffDaysHoursMins(absTimeSinceEndDate)}.`);
-
-            // TODO: check if not more, than 7 days, otherway need to use other method.
+            log.warn(`We are calculating results for round ended in the past. Time difference ${helpers.timeDiffDaysHoursMins(absTimeSinceEndDate)}.`);
+            // TODO: check if not more, than 7 days, other way need to use other method.
           }
 
           // TODO: check endDate in Future?
           winBet = await ccRate.getFreshCryptoRate(betCurrency, endDate);
 
           if (!winBet) {
-            log.warn(`Round calculation stopped as didn't received crypto rate for ${betCurrency} on ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Will try next time.`);
+            log.warn(`Round calculation stopped as we didn't receive crypto rate for ${betCurrency} on ${moment(endDate).format('YYYY/MM/DD HH:mm Z')}. Will try next time.`);
             return;
           }
 
@@ -128,7 +134,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
 
           const {PaymentsDb} = db;
 
-          log.info(`Calculating all of validated transactions for round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
+          log.log(`Calculating all of validated transactions for round ${_id}. Date is ${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}.`);
           await (await PaymentsDb.find({ // Select all of validated transactions for this round
             transactionIsConfirmed: true,
             transactionIsValid: true,
@@ -139,7 +145,7 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
             betRound: _id,
           }))
               .forEach(async (pay) => {
-                console.log(`1/ Payment for round ${_id}: Tx ${pay.admTxId} — ${pay.betMessageText}.`);
+                log.log(`1/ Bet on round ${_id}: Tx ${pay.admTxId} — ${pay.betMessageTextNoMarkdown}.`);
 
                 totalBetsCount++;
                 totalSumUsd+= pay.inAmountMessageUsd;
@@ -180,6 +186,16 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
                       totalWinnersADMSumUsd+= pay.inAmountMessageUsd;
                     }
                     break;
+                  case ('LSK'):
+                    totalLSKbetsCount++;
+                    totalLSKbetsSum+= pay.inAmountMessage;
+                    totalLSKbetsSumUsd+= pay.inAmountMessageUsd;
+                    if (pay.isWinner) {
+                      totalWinnersLSKCount++;
+                      totalWinnersLSKSum+= pay.inAmountMessage;
+                      totalWinnersLSKSumUsd+= pay.inAmountMessageUsd;
+                    }
+                    break;
                 }
 
                 await pay.save();
@@ -190,6 +206,13 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
           cr.rewardPoolUsd = totalSumUsd * (1-config.bureau_reward_percent/100);
           cr.rewardPoolADM = totalADMbetsSum * (1-config.bureau_reward_percent/100);
           cr.rewardPoolETH = totalETHbetsSum * (1-config.bureau_reward_percent/100);
+          cr.rewardPoolLSK = totalLSKbetsSum * (1-config.bureau_reward_percent/100);
+
+          const betsString = [];
+          config.accepted_crypto.forEach(async (coin) => {
+            const betFieldName = `total${coin}betsSum`;
+            betsString.push(`*${helpers.thousandSeparator(+(eval(betFieldName).toFixed(8)), false)}* _${coin}_`);
+          });
 
           const poolsString = [];
           config.accepted_crypto.forEach(async (coin) => {
@@ -197,14 +220,12 @@ Calculation for this round will be paused for 24 hours. If no action is taken, c
             poolsString.push(`*${helpers.thousandSeparator(+(cr[rewardPoolFieldName].toFixed(8)), false)}* _${coin}_`);
           });
 
-          // console.log('currentRound', currentRound);
           let msgNotify = '';
-          msgNotify = `Finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (${+Date.now()}).`;
+          msgNotify = `${config.notifyName} has finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (${+Date.now()}).`;
           msgNotify += ` Win rate: _${helpers.thousandSeparator(winBet, false)}_ USD for 1 _${betCurrency}_.`;
-          msgNotify += ` Total bets — _${helpers.thousandSeparator(totalBetsCount, false)}_ with _~${helpers.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered.`;
-          msgNotify += `
-
-Winners' bets — _${helpers.thousandSeparator(totalWinnersCount, false)}_ with _~${helpers.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
+          msgNotify += ` Total bets — _${helpers.thousandSeparator(totalBetsCount, false)}_ with _~${helpers.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered:`;
+          msgNotify += ` ${betsString.join(', ')}.`;
+          msgNotify += `\n\nWinners' bets — _${helpers.thousandSeparator(totalWinnersCount, false)}_ with _~${helpers.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
           msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${helpers.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
           notify(msgNotify, 'log');
 
@@ -223,18 +244,24 @@ Winners' bets — _${helpers.thousandSeparator(totalWinnersCount, false)}_ with 
             totalSumUsd,
             totalADMbetsCount,
             totalETHbetsCount,
+            totalLSKbetsCount,
             totalADMbetsSum,
             totalETHbetsSum,
+            totalLSKbetsSum,
             totalADMbetsSumUsd,
             totalETHbetsSumUsd,
+            totalLSKbetsSumUsd,
             totalWinnersCount,
             totalWinnersADMCount,
             totalWinnersETHCount,
+            totalWinnersLSKCount,
             totalWinnersETHSum,
             totalWinnersADMSum,
+            totalWinnersLSKSum,
             totalWinnersUsdSum,
             totalWinnersADMSumUsd,
             totalWinnersETHSumUsd,
+            totalWinnersLSKSumUsd,
             // rewardPoolUsd, // these values saved to cr. directly in order to access rewardPoolFieldName
             // rewardPoolADM,
             // rewardPoolETH,

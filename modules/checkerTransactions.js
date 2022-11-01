@@ -1,8 +1,8 @@
 const Store = require('./Store');
-const api = require('./api');
-const txParser = require('./incomingTxsParser');
 const helpers = require('../helpers/utils');
 const config = require('./configReader');
+const api = require('./api');
+const txParser = require('./incomingTxsParser');
 const log = require('../helpers/log');
 
 async function check() {
@@ -12,17 +12,17 @@ async function check() {
     }
     let txs = [];
     const txChat = await api.get('chats/get', {recipientId: config.address, orderBy: 'timestamp:desc', fromHeight: Store.lastHeight - 5});
-    if (txChat.success) {
+    if (txChat?.success) {
       txs = txs.concat(txChat.data.transactions);
     } else {
-      log.warn(`Failed to chat Txs in check() of ${helpers.getModuleName(module.id)} module. ${txChat.errorMessage}.`);
+      log.warn(`Failed to chat Txs in check() of ${helpers.getModuleName(module.id)} module. ${txChat?.errorMessage}.`);
     }
 
     const txTrx = await api.get('transactions', {fromHeight: Store.lastHeight - 5, 'and:recipientId': config.address, 'and:type': 0});
-    if (txTrx.success) {
+    if (txTrx?.success) {
       txs = txs.concat(txTrx.data.transactions);
     } else {
-      log.warn(`Failed to chat Txs in check() of ${helpers.getModuleName(module.id)} module. ${txTrx.errorMessage}.`);
+      log.warn(`Failed to chat Txs in check() of ${helpers.getModuleName(module.id)} module. ${txTrx?.errorMessage}.`);
     }
 
     txs.forEach((tx) => {
@@ -36,5 +36,5 @@ async function check() {
   }
 }
 module.exports = () => {
-  setInterval(check, 1500);
+  setInterval(check, 2500);
 };

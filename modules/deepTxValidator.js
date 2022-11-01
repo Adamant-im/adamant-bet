@@ -16,7 +16,8 @@ module.exports = async (pay, tx) => {
   // Fetching addresses from ADAMANT KVS
   try {
     const senderKvsADMAddress = tx.senderId;
-    const senderKvsETHAddress = pay.senderKvsETHAddress || await $u.getAddressCryptoFromKVS('ETH', tx.senderId);
+    const senderKvsETHAddress = pay.senderKvsETHAddress || await $u.getAddressCryptoFromAdmAddressADM('ETH', tx.senderId);
+    const senderKvsLSKAddress = pay.senderKvsLSKAddress || await $u.getAddressCryptoFromAdmAddressADM('LSK', tx.senderId);
     let senderKvsInAddress;
 
     switch (pay.inCurrency) {
@@ -26,12 +27,16 @@ module.exports = async (pay, tx) => {
       case ('ADM'):
         senderKvsInAddress = senderKvsADMAddress;
         break;
+      case ('LSK'):
+        senderKvsInAddress = senderKvsLSKAddress;
+        break;
     }
 
     pay.update({
       senderKvsInAddress,
       senderKvsADMAddress,
       senderKvsETHAddress,
+      senderKvsLSKAddress,
     });
 
     if (!senderKvsETHAddress) {
@@ -40,12 +45,32 @@ module.exports = async (pay, tx) => {
       return;
     }
 
+    if (!senderKvsLSKAddress) {
+      log.error(`Can't get LSK address from KVS. Will try next time.`);
+      await pay.save();
+      return;
+    }
+
     let notifyType = 'log';
     if (senderKvsETHAddress === 'none') {
       if (!pay.isKVSnotFoundNotified) {
         notifyType = 'warn';
-        notify(`Bet Bot ${Store.botName} cannot fetch _ETH_ address from KVS. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}. Will try to send back.`, 'warn');
+        notify(`${config.notifyName} cannot fetch _ETH_ address of ${tx.senderId} from KVS. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}. Will try to send back.`, 'warn');
         const msgSendBack = `I can’t get your _ETH_ address from ADAMANT KVS. It is necessary to send reward in case of win. I'll try to send transfer back to you now. Before next bet, re-login into your ADAMANT account using app that supports _ETH_.`;
+        await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
+      }
+      pay.update({
+        error: 8,
+        needToSendBack: true,
+        isKVSnotFoundNotified: true, // need to verify Tx even if send back
+      }, true);
+    }
+
+    if (senderKvsLSKAddress === 'none') {
+      if (!pay.isKVSnotFoundNotified) {
+        notifyType = 'warn';
+        notify(`${config.notifyName} cannot fetch _LSK_ address of ${tx.senderId} from KVS. Income ADAMANT Tx: https://explorer.adamant.im/tx/${tx.id}. Will try to send back.`, 'warn');
+        const msgSendBack = `I can’t get your _LSK_ address from ADAMANT KVS. It is necessary to send reward in case of win. I'll try to send transfer back to you now. Before next bet, re-login into your ADAMANT account using app that supports _LSK_.`;
         await api.sendMessageWithLog(config.passPhrase, tx.senderId, msgSendBack);
       }
       pay.update({
@@ -60,7 +85,7 @@ module.exports = async (pay, tx) => {
 
     // Validating incoming TX in blockchain of inCurrency
     try {
-      const in_tx = await $u[pay.inCurrency].syncGetTransaction(pay.inTxid, tx);
+      const in_tx = await $u[pay.inCurrency].getTransaction(pay.inTxid, tx);
       if (!in_tx) {
         if (pay.counterTxDeepValidator < 20) {
           await pay.save();
@@ -72,7 +97,7 @@ module.exports = async (pay, tx) => {
           error: 10,
         });
         notifyType = 'warn';
-        msgNotify = `Bet Bot ${Store.botName} can’t fetch transaction of _${pay.inAmountMessage} ${pay.inCurrency}_.`;
+        msgNotify = `${config.notifyName} can’t fetch transaction of _${pay.inAmountMessage} ${pay.inCurrency}_ from ${pay.senderId}.`;
         msgSendBack = `I can’t get transaction of _${pay.in_amount_message} ${pay.inCurrency}_ with Tx ID _${pay.inTxid}_ from _ ${pay.inCurrency}_ blockchain. It might be failed or cancelled. If you think it’s a mistake, contact my master.`;
       } else {
         pay.update({
@@ -88,7 +113,7 @@ module.exports = async (pay, tx) => {
             error: 11,
           });
           notifyType = 'warn';
-          msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Sender expected: _${pay.senderKvsInAddress}_, but real sender is _${pay.senderReal}_.`;
+          msgNotify = `${config.notifyName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ from ${pay.senderId} is wrong. Sender expected: _${pay.senderKvsInAddress}_, but real sender is _${pay.senderReal}_.`;
           msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
         } else if (String(pay.recipientReal).toLowerCase() !== Store.user[pay.inCurrency].address.toLowerCase()) {
           pay.update({
@@ -97,7 +122,7 @@ module.exports = async (pay, tx) => {
             error: 12,
           });
           notifyType = 'warn';
-          msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Recipient expected: _${Store.user[pay.inCurrency].address}_, but real recipient is _${pay.recipientReal}_.`;
+          msgNotify = `${config.notifyName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ from ${pay.senderId} is wrong. Recipient expected: _${Store.user[pay.inCurrency].address}_, but real recipient is _${pay.recipientReal}_.`;
           msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
         } else if (Math.abs(pay.inAmountReal - pay.inAmountMessage) > pay.inAmountReal * 0.005) {
           pay.update({
@@ -106,7 +131,7 @@ module.exports = async (pay, tx) => {
             error: 13,
           });
           notifyType = 'warn';
-          msgNotify = `Bet Bot ${Store.botName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ is wrong. Amount expected: _${pay.inAmountMessage}_, but real amount is _${pay.inAmountReal}_.`;
+          msgNotify = `${config.notifyName} thinks transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ from ${pay.senderId} is wrong. Amount expected: _${pay.inAmountMessage}_, but real amount is _${pay.inAmountReal}_.`;
           msgSendBack = `I can’t validate transaction of _${pay.inAmountMessage}_ _${pay.inCurrency}_ with Tx ID _${pay.inTxid}_. If you think it’s a mistake, contact my master.`;
         } else { // Transaction is valid
           pay.update({
@@ -129,17 +154,17 @@ module.exports = async (pay, tx) => {
   }
 };
 
-setInterval(async ()=>{
+setInterval(async () => {
   const {PaymentsDb} = db;
   (await PaymentsDb.find({
     transactionIsValid: null,
     isFinished: false,
   })).forEach(async (pay) => {
-    const tx = await api.get('transaction', {id: pay.admTxId});
-    if (tx.success) {
-      module.exports(pay, tx);
+    const tx = await api.get('transactions/get', {id: pay.admTxId});
+    if (tx?.success) {
+      module.exports(pay, tx.data.transaction);
     } else {
-      log.warn(`Failed to get transaction of ${helpers.getModuleName(module.id)} module. ${tx.errorMessage}.`);
+      log.warn(`Failed to get transaction in setInterval() of ${helpers.getModuleName(module.id)} module. ${tx?.errorMessage}.`);
       module.exports(pay, null);
     }
   });

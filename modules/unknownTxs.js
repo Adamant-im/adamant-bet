@@ -21,7 +21,7 @@ module.exports = async (tx, itx) => {
         if (countMsgs === 1) {
           msg = config.welcome_string;
         } else if (countMsgs === 2) {
-          msg = 'Good in cryto rates forecasts, ha? Make a Blockachin proved bet! ℹ️ Type **/help** for instructions.';
+          msg = 'Good in crypto rates forecasts, ha? Make a Blockchain proved bet! ℹ️ Type **/help** for instructions.';
         } else if (countMsgs === 3) {
           msg = 'ADAMANT is so much anonymous 🤪 and offers superior features. I am a bet bot and accept bets on crypto rates. Type **/help** to proceed.';
         } else if (countMsgs === 4) {
@@ -53,7 +53,7 @@ function getRnd(collectionNum) {
 const collection = [
   // 0 collection
   [
-    'Do you wanna beer 🍺? I want to have it aslo, but now is the bet time. Do you want a reward 💰?',
+    'Do you wanna beer 🍺? I want to have it also, but now is the bet time. Do you want a reward 💰?',
     'Aaaaghr..! 😱 Check out ₿ rates with **/rates BTC** command right now!',
     'I can tell you bet rules by secret. ℹ️ Just say **/help**.',
     'I am just kiddin! 😛',
@@ -71,8 +71,8 @@ const collection = [
     'Convenient. Anonymous. Reliable. Instant. Oh, it is me! 💱',
     'ADAMANT is open source, including myself 🤖. Join to make me better! 📶',
     'Do you know what is ADAMANT 2FA?',
-    'ADAMANT is soooo decentralised! And private! ❤️',
-    'Do you want me to accept bet with more cryptocurrenies 💱? Ask my master!',
+    'ADAMANT is soooo decentralized! And private! ❤️',
+    'Do you want me to accept bet with more cryptocurrencies 💱? Ask my master!',
     'Recommend ADAMANT to your friends! 🌟',
     'If I were Satoshi, I’d rebuild Bitcoin ₿ on top of ADAMANT! 😍',
   ],

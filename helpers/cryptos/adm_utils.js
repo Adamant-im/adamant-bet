@@ -1,19 +1,16 @@
 const Store = require('../../modules/Store');
-const helpers = require('../utils');
-const config = require('../../modules/configReader');
 const api = require('../../modules/api');
-const log = require('../../helpers/log');
-
-const {
-  SAT,
-} = require('../const');
+const log = require('../log');
+const config = require('../../modules/configReader');
+const helpers = require('../utils');
+const {SAT} = require('../const');
 const User = Store.user.ADM;
 
 module.exports = {
   get FEE() {
-    return Store.comissions.ADM;
+    return Store.fees.ADM;
   },
-  syncGetTransaction(hash, tx) {
+  getTransaction(hash, tx) {
     return {
       blockNumber: tx.blockId,
       hash: tx.id,
@@ -34,7 +31,7 @@ module.exports = {
     const tx = await api.get('transactions/get', {id: txId});
     if (tx.success) {
       return {
-        blockNumber: tx.height,
+        blockNumber: tx.data.transaction.height,
         status: true,
       };
     } else {
@@ -44,14 +41,14 @@ module.exports = {
   async send(params) {
     const {address, value, comment} = params;
     const payment = await api.sendMessageWithLog(config.passPhrase, address, comment, 'basic', value);
-    if (payment.success) {
+    if (payment?.success) {
       log.log(`Successfully sent ${value} ADM to ${address} with comment '${comment}', Tx hash: ${payment.data.transactionId}.`);
       return {
         success: payment.data.success,
         hash: payment.data.transactionId,
       };
     } else {
-      log.warn(`Failed to send ${value} ADM to ${address} with comment ${comment} in send() of ${helpers.getModuleName(module.id)} module. ${payment.errorMessage}.`);
+      log.warn(`Failed to send ${value} ADM to ${address} with comment ${comment} in send() of ${helpers.getModuleName(module.id)} module. ${payment?.errorMessage}.`);
       return {
         success: false,
         error: payment.errorMessage,

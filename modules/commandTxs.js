@@ -46,18 +46,18 @@ function help() {
   let str = `I am **online** and ready to accept your bets on _${config.bet_currency}_ rate. I accept and pay rewards in _${config.accepted_crypto.join(', ')}_.`;
   str += ` Current round _${Store.round}_ ends in _${Task.getBetDateString('current').tillString}_ (${Task.getBetDateString('current').nextRoundTime}).`;
 
-  const isCoolPreriod = Task.ifCoolPeriod(Date.now());
-  if (isCoolPreriod) {
+  const isCoolPeriod = Task.ifCoolPeriod(Date.now());
+  if (isCoolPeriod) {
     str += `
 
 **Note**: It is cool period—bets are accepted for next round _${Store.round+1}_ only, which ends in _${Task.getBetDateString('next').tillString}_ (${Task.getBetDateString('next').nextRoundTime}).`;
   } else {
-    str += ` I have cool period of _${config.cool_period_hours}_ hours when I don't accept bets for current round. So I will accept bets for round _${Store.round}_ until ${Task.coolPeriodStartDate().datestring}.`;
+    str += ` I have cool period of _${config.cool_period_hours}_ hours when I don't accept bets for current round. So I will accept bets for round _${Store.round}_ until ${Task.coolPeriodStartDate().dateString}.`;
   }
 
   str += `
 
-**Rules**: all bets for each round are collected together. I take _${config.bureau_reward_percent}%_ for my service, and distribute _${100-config.bureau_reward_percent}%_ among winners.`;
+**Rules**: All bets for each round are collected together. I take _${config.bureau_reward_percent}%_ for my service, and distribute _${100-config.bureau_reward_percent}%_ among winners.`;
   str += ` Your stake depends on Amount, forecast accuracy and time of bet. Earlier you place a bet, more stake you get. Winners guess _${config.bet_currency}_ rate _±${config.win_price_range}_ USD.`;
   str += ` _You can bet multiple times for different rates_. I accept minimal equivalent of _${config.min_value_usd}_ USD for betting and pay rewards greater then _${config.min_reward_usd}_ USD. Your daily limit is _${config.daily_limit_usd}_ USD.`;
   str += `
@@ -68,9 +68,9 @@ I understand commands:
 
 **/calc** — I will calculate one coin value in another using market exchange rates. Works like this: _/calc 2.05 BTC in USD_.
 
-**To make a bet**, just send me crypto here in-Chat. Amount is your bet and comment is your _${config.bet_currency}_ forecast rate. F. e., if you want to make a bet of 0.35 ETH on 10 600 USD for _${config.bet_currency}_, send in-Chat payment of 0.35 ETH to me with “10600” comment.
+**To make a bet**, send me crypto here in-Chat. Amount is your bet and comment is your _${config.bet_currency}_ forecast rate. F. e., if you want to make a bet of 0.35 ETH on 10 600 USD for _${config.bet_currency}_, send in-Chat payment of 0.35 ETH to me with “10600” comment.
 
-New features are coming soon! I am learning to provide current placed bets, notify about results for rounds, and new type of betting: maximum/ minimum rate during round, ascending or descending trend, will rate exceed special value or not (make a bet if McAfee will eat his dick).
+New features are coming soon! I am learning to provide current placed bets, notify about results for rounds, and new type of betting: maximum/ minimum rate during round, ascending or descending trend, will rate exceed special value or not.
 `;
 
   return {

@@ -208,6 +208,12 @@ module.exports = async () => {
           cr.rewardPoolETH = totalETHbetsSum * (1-config.bureau_reward_percent/100);
           cr.rewardPoolLSK = totalLSKbetsSum * (1-config.bureau_reward_percent/100);
 
+          const betsString = [];
+          config.accepted_crypto.forEach(async (coin) => {
+            const betFieldName = `total${coin}betsSum`;
+            betsString.push(`*${helpers.thousandSeparator(+(eval(betFieldName).toFixed(8)), false)}* _${coin}_`);
+          });
+
           const poolsString = [];
           config.accepted_crypto.forEach(async (coin) => {
             const rewardPoolFieldName = 'rewardPool' + coin;
@@ -217,7 +223,8 @@ module.exports = async () => {
           let msgNotify = '';
           msgNotify = `${config.notifyName} has finished packing round number _${_id}_. Current date is _${moment(Date.now()).format('YYYY/MM/DD HH:mm Z')}_ (${+Date.now()}).`;
           msgNotify += ` Win rate: _${helpers.thousandSeparator(winBet, false)}_ USD for 1 _${betCurrency}_.`;
-          msgNotify += ` Total bets — _${helpers.thousandSeparator(totalBetsCount, false)}_ with _~${helpers.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered.`;
+          msgNotify += ` Total bets — _${helpers.thousandSeparator(totalBetsCount, false)}_ with _~${helpers.thousandSeparator(totalSumUsd.toFixed(2), false)}_ USD wagered:`;
+          msgNotify += ` ${betsString.join(', ')}.`;
           msgNotify += `\n\nWinners' bets — _${helpers.thousandSeparator(totalWinnersCount, false)}_ with _~${helpers.thousandSeparator(totalWinnersUsdSum.toFixed(2), false)}_ USD wagered.`;
           msgNotify += ` Total rewards: ${poolsString.join(', ')} (*~${helpers.thousandSeparator(cr.rewardPoolUsd.toFixed(2), false)}* _USD_ at time of bets placed).`;
           notify(msgNotify, 'log');

@@ -10,12 +10,14 @@ const api = require('./api');
 module.exports = async () => {
   const {RewardsPayoutsDb} = db;
 
-  (await RewardsPayoutsDb.find({
+  const payouts = await RewardsPayoutsDb.find({
     isFinished: false,
     isPaused: false,
     isPayoutMade: false,
     outTxid: null,
-  })).forEach(async (payout) => {
+  });
+
+  for (const payout of payouts) {
     let {
       itxId,
       senderId,
@@ -115,12 +117,19 @@ module.exports = async () => {
 
     await payout.update({
       triesSendCounter,
-    });
-
-    await payout.save();
-  });
+    }, true);
+  }
 };
 
-setInterval(() => {
-  module.exports();
-}, 30 * 1000);
+const interval = 30 * 1000;
+let isPreviousIterationFinished = true;
+
+setInterval(async () => {
+  if (isPreviousIterationFinished) {
+    isPreviousIterationFinished = false;
+    await module.exports();
+    isPreviousIterationFinished = true;
+  } else {
+    log.log(`Postponing iteration of ${helpers.getModuleName(module.id)} module for ${interval} ms. Previous iteration is in progress yet.`);
+  }
+}, interval);

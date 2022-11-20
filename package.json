@@ -26,7 +26,7 @@
   "dependencies": {
     "@liskhq/lisk-cryptography": "^3.2.1",
     "@liskhq/lisk-transactions": "^5.2.2",
-    "adamant-api": "^1.5.0",
+    "adamant-api": "^1.6.0",
     "axios": "^1.1.3",
     "cron": "^1.8.2",
     "ethereumjs-tx": "^2.1.2",
@@ -35,19 +35,19 @@
     "jsonminify": "^0.4.2",
     "jsonrpc-client": "^0.1.1",
     "moment": "^2.29.4",
-    "mongodb": "^4.11.0",
+    "mongodb": "^4.12.0",
     "node-ethereum-wallet": "^1.4.3",
     "node-json-rpc": "0.0.1",
     "request": "^2.88.0",
-    "web3": "^1.8.0"
+    "web3": "^1.8.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.1.2",
-    "@commitlint/config-conventional": "^17.1.0",
-    "eslint": "8.26.0",
+    "@commitlint/cli": "^17.2.0",
+    "@commitlint/config-conventional": "^17.2.0",
+    "eslint": "8.28.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-jest": "^27.1.3",
-    "husky": "^8.0.1"
+    "eslint-plugin-jest": "^27.1.5",
+    "husky": "^8.0.2"
   },
   "publishConfig": {
     "access": "public"

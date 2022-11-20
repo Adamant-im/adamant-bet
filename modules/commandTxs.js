@@ -84,9 +84,9 @@ async function rates(params) {
   let output = '';
 
   try {
-    const coin1 = params[0].toUpperCase().trim();
+    const coin1 = params?.[0]?.toUpperCase();
 
-    if (!coin1 || !coin1.length) {
+    if (!coin1) {
       output = 'Please specify coin ticker or specific market you are interested in. F. e., */rates ADM*.';
       return {
         msgNotify: ``,
@@ -104,7 +104,7 @@ async function rates(params) {
         })
         .join(', ');
 
-    if (!res.length) {
+    if (!res?.length) {
       output = `I can’t get rates for *${coin1}*. Made a typo? Try */rates ADM*.`;
       return {
         msgNotify: ``,

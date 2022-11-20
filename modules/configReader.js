@@ -150,13 +150,15 @@ try {
   });
 
   Object.keys(fields).forEach((f) => {
-    if (!config[f] && fields[f].isRequired) {
-      exit(`Bet Bot ${address} config is wrong. Field _${f}_ is not valid. Cannot start Bot.`);
-    } else if (!config[f] && fields[f].default) {
-      config[f] = fields[f].default;
+    if (config[f] === undefined) {
+      if (fields[f].isRequired) {
+        exit(`Bot's ${address} config is wrong. Field _${f}_ is not valid. Cannot start Bot.`);
+      } else if (fields[f].default !== undefined) {
+        config[f] = fields[f].default;
+      }
     }
-    if (config[f] && fields[f].type !== config[f].__proto__.constructor) {
-      exit(`Bet Bot ${address} config is wrong. Field type _${f}_ is not valid, expected type is _${fields[f].type.name}_. Cannot start Bot.`);
+    if (config[f] !== false && fields[f].type !== config[f].__proto__.constructor) {
+      exit(`Bot's ${address} config is wrong. Field type _${f}_ is not valid, expected type is _${fields[f].type.name}_. Cannot start Bot.`);
     }
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "adamant-bet",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Anonymous and Blockchain-proved betting software",
   "main": "index.js",
   "scripts": {

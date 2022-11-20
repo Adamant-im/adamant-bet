@@ -91,7 +91,7 @@ module.exports = async () => {
                   });
 
                   const addressString = newPayout.senderKvsOutAddress === newPayout.senderId ? newPayout.senderKvsOutAddress : newPayout.senderKvsOutAddress + ' (' + newPayout.senderId + ')';
-                  log.log(`Created reward payment of ${newPayout.outAmount} ${newPayout.outCurrency} to ${addressString} / Tx ${newPayout.itxId} (round ${newPayout.betRound}).`);
+                  log.log(`Created reward payment of ${newPayout.outAmount} ${newPayout.outCurrency} to ${addressString} on income message ${newPayout.itxId} (round ${newPayout.betRound}).`);
                   await newPayout.save();
                 }
               });
@@ -105,7 +105,7 @@ module.exports = async () => {
             }
 
             let logString = '';
-            logString = `Round ${_id} results for ${senderId} / ${admTxId}: ${isWinner}.`;
+            logString = `Round ${_id} results for ${senderId} (tx ${admTxId}): ${isWinner}.`;
             logString += ` Actual rate: ${helpers.thousandSeparator(winBet, false)} USD, accuracy koef: ${accuracyKoef.toFixed(2)}, Early bet koef: ${earlyBetKoef.toFixed(2)}.`;
             if (pay.isWinner) {
               logString += ` Rewards are: ${rewardsString.join(', ')} (~${helpers.thousandSeparator(payoutValueUsd.toFixed(2), false)} USD at time of bets placed).`;

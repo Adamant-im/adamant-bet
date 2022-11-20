@@ -1,6 +1,7 @@
 const db = require('./DB');
 const config = require('./configReader');
 const $u = require('../helpers/cryptos');
+const helpers = require('../helpers/utils');
 const Store = require('./Store');
 const log = require('../helpers/log');
 const notify = require('../helpers/notify');
@@ -99,6 +100,15 @@ module.exports = async () => {
   }
 };
 
-setInterval(() => {
-  module.exports();
-}, 17 * 1000);
+const interval = 17 * 1000;
+let isPreviousIterationFinished = true;
+
+setInterval(async () => {
+  if (isPreviousIterationFinished) {
+    isPreviousIterationFinished = false;
+    await module.exports();
+    isPreviousIterationFinished = true;
+  } else {
+    log.log(`Postponing iteration of ${helpers.getModuleName(module.id)} module for ${interval} ms. Previous iteration is in progress yet.`);
+  }
+}, interval);

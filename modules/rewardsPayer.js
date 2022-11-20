@@ -60,7 +60,7 @@ module.exports = async () => {
         isFinished: true,
         triesSendCounter,
       }, true);
-      notify(`${config.notifyName} won’t send reward of _${outAmountF} ${outCurrency}_ to _${addressString}_ in round _${betRound}_ because it is less than minimum amount of _${minRewardUsdF}_ USD. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, log);
+      notify(`${config.notifyName} won’t send reward of _${outAmountF} ${outCurrency}_ to _${addressString}_ in round _${betRound}_ because it is less than minimum amount of _${minRewardUsdF}_ USD. Income ADAMANT Tx: https://explorer.adamant.im/tx/${itxId}.`, 'log');
       const msgSendBack = `I wouldn’t send you the reward payment of _${outAmountF} ${outCurrency}_ because it is less than minimum amount of _${minRewardUsdF}_ USD.`;
       await api.sendMessageWithLog(config.passPhrase, senderId, msgSendBack);
       return;
